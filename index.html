@@ -14,6 +14,7 @@
     --accent-ink: #ffffff;
     --border: #f0dcc2;
     --locked: #d8d2ca;
+    --danger: #c0392b;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -25,6 +26,7 @@
       --accent-ink: #1d1814;
       --border: #43372c;
       --locked: #4a433c;
+      --danger: #ff6b5b;
     }
   }
   * { box-sizing: border-box; }
@@ -40,7 +42,17 @@
     min-height: 100vh;
   }
   h1 { margin: 8px 0 4px; font-size: 2rem; text-align: center; }
-  .sub { margin: 0 0 16px; color: var(--muted); text-align: center; }
+  .sub { margin: 0 0 12px; color: var(--muted); text-align: center; }
+  .tabs {
+    display: flex; gap: 4px; background: var(--card); border: 2px solid var(--border);
+    border-radius: 999px; padding: 4px; margin-bottom: 16px;
+  }
+  .tabs button {
+    background: transparent; color: var(--ink); box-shadow: none;
+    font-size: 1rem; padding: 8px 18px;
+  }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+  .panel { width: 100%; display: flex; flex-direction: column; align-items: center; }
   .wheel-wrap { position: relative; width: min(90vw, 420px); aspect-ratio: 1; }
   canvas { width: 100%; height: 100%; display: block; }
   .pointer {
@@ -63,12 +75,19 @@
     background: transparent; color: var(--ink); border: 2px solid var(--border);
     box-shadow: none; font-size: 1rem; padding: 10px 20px;
   }
+  button.small { font-size: .9rem; padding: 6px 14px; }
+  button.danger { color: var(--danger); }
+  button.icon {
+    background: transparent; color: var(--muted); box-shadow: none;
+    padding: 4px 10px; font-size: 1.1rem;
+  }
   .controls { margin: 20px 0; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   .card {
     background: var(--card); border: 2px solid var(--border); border-radius: 16px;
     padding: 16px 20px; width: min(100%, 460px); margin-bottom: 16px;
   }
   .card h2 { margin: 0 0 8px; font-size: 1.5rem; }
+  .card h3 { margin: 0 0 8px; font-size: 1.15rem; }
   .card ul { margin: 8px 0 0; padding-left: 20px; }
   .card li { margin: 4px 0; }
   .tag {
@@ -77,131 +96,261 @@
     vertical-align: middle;
   }
   .note { color: var(--muted); font-size: .9rem; }
-  .hidden { display: none; }
+  .hidden { display: none !important; }
+
+  /* History */
+  .history { list-style: none; padding: 0 !important; margin: 0 !important; }
+  .history li {
+    display: flex; align-items: center; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border); margin: 0 !important;
+  }
+  .history li:last-child { border-bottom: none; }
+  .history .day { min-width: 84px; color: var(--muted); font-size: .9rem; }
+  .history .what { flex: 1; }
+  .history .fruit { display: block; color: var(--muted); font-size: .85rem; }
+
+  /* Menu editor */
+  details.meal { border: 2px solid var(--border); border-radius: 12px; margin-bottom: 10px; }
+  details.meal summary {
+    cursor: pointer; padding: 10px 12px; font-weight: bold; list-style: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  details.meal summary::-webkit-details-marker { display: none; }
+  details.meal summary .swatch { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+  details.meal summary .flags { margin-left: auto; font-size: .8rem; color: var(--muted); font-weight: normal; }
+  details.meal .body { padding: 0 12px 12px; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin: 10px 0 4px; }
+  label.check { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: .95rem; }
+  input[type=text], textarea {
+    width: 100%; font: inherit; padding: 8px 10px; border-radius: 8px;
+    border: 2px solid var(--border); background: var(--bg); color: var(--ink);
+  }
+  textarea { min-height: 70px; resize: vertical; }
+  .row { display: flex; gap: 10px; align-items: flex-end; }
+  .row > div { flex: 1; }
+  .row .emoji input { text-align: center; }
+  input[type=color] { width: 48px; height: 40px; border: none; background: none; padding: 0; }
 </style>
 </head>
 <body>
   <h1>🍳 Breakfast Wheel 🥞</h1>
   <p class="sub">Spin it to pick today's breakfast!</p>
 
-  <div class="wheel-wrap">
-    <div class="pointer"></div>
-    <canvas id="wheel" width="840" height="840"></canvas>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="spin" aria-selected="true">🎡 Spin</button>
+    <button role="tab" data-tab="history" aria-selected="false">📅 History</button>
+    <button role="tab" data-tab="menu" aria-selected="false">✏️ Menu</button>
   </div>
 
-  <div class="controls">
-    <button id="spin">SPIN!</button>
-  </div>
-
-  <div id="result" class="card hidden" aria-live="polite">
-    <h2 id="meal-name"></h2>
-    <div id="meal-heavy"></div>
-    <ul id="meal-plate"></ul>
-    <p id="meal-tip" class="note"></p>
-    <div class="controls" style="margin-bottom:0">
-      <button id="lock" class="secondary">✅ We're having this!</button>
+  <!-- SPIN -->
+  <section id="tab-spin" class="panel">
+    <div class="wheel-wrap">
+      <div class="pointer"></div>
+      <canvas id="wheel" width="840" height="840"></canvas>
     </div>
-  </div>
 
-  <div class="card">
-    <strong>Go out to DK:</strong> <span id="dk-status"></span>
-    <p class="note" style="margin-bottom:0">DK can only be picked once a week (Monday–Sunday).
-      It counts once you tap “We're having this!”.</p>
-    <div class="controls" style="margin-bottom:0">
-      <button id="reset-dk" class="secondary">Reset DK for this week</button>
+    <div class="controls">
+      <button id="spin">SPIN!</button>
     </div>
-  </div>
+
+    <div id="result" class="card hidden" aria-live="polite">
+      <h2 id="meal-name"></h2>
+      <div id="meal-heavy"></div>
+      <ul id="meal-plate"></ul>
+      <p id="meal-tip" class="note"></p>
+      <div class="controls" style="margin-bottom:0">
+        <button id="lock" class="secondary">✅ We're having this!</button>
+      </div>
+    </div>
+
+    <div id="weekly-card" class="card">
+      <h3>Once-a-week treats</h3>
+      <ul id="weekly-status"></ul>
+      <p class="note" style="margin-bottom:0">These can only be picked once a week (Monday–Sunday).
+        A pick counts once you tap “We're having this!”. Delete it from History to undo.</p>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="tab-history" class="panel hidden">
+    <div class="card">
+      <h3>What we've had</h3>
+      <ul id="history" class="history"></ul>
+      <p id="history-empty" class="note">Nothing yet — spin the wheel and tap “We're having this!”.</p>
+    </div>
+    <div class="card">
+      <h3>Last 7 days</h3>
+      <ul id="history-counts"></ul>
+      <p id="history-counts-empty" class="note">No breakfasts logged this past week.</p>
+    </div>
+    <div class="controls" style="margin-top:0">
+      <button id="clear-history" class="secondary danger">Clear all history</button>
+    </div>
+  </section>
+
+  <!-- MENU EDITOR -->
+  <section id="tab-menu" class="panel hidden">
+    <div class="card">
+      <h3>Breakfasts on the wheel</h3>
+      <p class="note" style="margin-top:0">Tap one to edit it. Changes save automatically on this device.</p>
+      <div id="meal-editor"></div>
+      <div class="controls" style="margin-bottom:0">
+        <button id="add-meal" class="secondary">➕ Add a breakfast</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Fruits</h3>
+      <p class="note" style="margin-top:0">One per line. A random one is added to every breakfast.</p>
+      <textarea id="fruit-editor" rows="8"></textarea>
+    </div>
+    <div class="controls" style="margin-top:0">
+      <button id="reset-menu" class="secondary danger">Reset menu to defaults</button>
+    </div>
+  </section>
 
 <script>
   // Every meal is built to be balanced: main + fruit + protein (and a veggie where it fits).
-  // "heavy" meals get extra tips to offset the sugar/carbs.
-  const MEALS = [
+  // "heavy" meals get extra tips to offset the sugar/carbs. "weekly" meals can be eaten once per week.
+  const DEFAULT_MEALS = [
     {
-      name: "Pancakes", emoji: "🥞", color: "#f6b94c", heavy: true,
+      id: "pancakes", name: "Pancakes", emoji: "🥞", color: "#f6b94c", heavy: true, weekly: false,
       plate: ["Pancakes (try whole-wheat or oat mix)", "Scrambled egg or turkey sausage for protein", "Glass of milk"],
       tip: "Top with berries or sliced banana and a little peanut butter or Greek yogurt instead of piling on syrup. Serve syrup on the side in a small cup for dipping."
     },
     {
-      name: "French Toast", emoji: "🍞", color: "#e88b4a", heavy: true,
+      id: "french-toast", name: "French Toast", emoji: "🍞", color: "#e88b4a", heavy: true, weekly: false,
       plate: ["French toast on whole-grain bread", "Extra egg in the batter = more protein", "Glass of milk"],
       tip: "Add cinnamon and vanilla so it needs less syrup. Top with warm berries or applesauce, and a spoonful of Greek yogurt."
     },
     {
-      name: "Oatmeal / MUSH", emoji: "🥣", color: "#c9a26b", heavy: false,
+      id: "oatmeal", name: "Oatmeal / MUSH", emoji: "🥣", color: "#c9a26b", heavy: false, weekly: false,
       plate: ["Oatmeal or MUSH overnight oats", "Stir in nut butter or chia seeds for protein", "Glass of milk"],
       tip: "Plain oats + your own fruit beats the sugary flavored packets. Hard-boiled egg on the side keeps everyone full longer."
     },
     {
-      name: "Scrambled Eggs", emoji: "🍳", color: "#f4d35e", heavy: false,
+      id: "eggs", name: "Scrambled Eggs", emoji: "🍳", color: "#f4d35e", heavy: false, weekly: false,
       plate: ["Scrambled eggs", "Whole-grain toast", "Sneak in spinach, peppers, or cheese"],
       tip: "Already protein-packed! Just add a fruit and some whole grains."
     },
     {
-      name: "Bagels", emoji: "🥯", color: "#d8a47f", heavy: true,
+      id: "bagels", name: "Bagels", emoji: "🥯", color: "#d8a47f", heavy: true, weekly: false,
       plate: ["Bagel (whole-wheat if you've got it — or half a bagel)", "Cream cheese, peanut butter, or egg + cheese sandwich", "Cucumber or tomato slices"],
       tip: "Bagels are mostly carbs, so add protein (egg, PB, or cheese) and pair with fruit."
     },
     {
-      name: "Cereal", emoji: "🥛", color: "#7fc8a9", heavy: false,
+      id: "cereal", name: "Cereal", emoji: "🥛", color: "#7fc8a9", heavy: false, weekly: false,
       plate: ["Cereal (pick one with less sugar and more fiber)", "Milk", "Yogurt or a cheese stick for protein"],
       tip: "Mix a sugary cereal half-and-half with a plain one, and slice fruit right on top."
     },
     {
-      name: "Go out to DK!", short: "Go out to DK", emoji: "🎉", color: "#e85d75", heavy: true, weekly: true,
+      id: "dk", name: "Go out to DK!", emoji: "🎉", color: "#e85d75", heavy: true, weekly: true,
       plate: ["Pick one treat each", "Add an egg sandwich or something with protein if you can", "Milk or water instead of juice/soda"],
       tip: "Treat day! Bring fruit from home for the car (clementines, apple slices, grapes) and keep lunch light and veggie-heavy."
     }
   ];
 
-  const FRUITS = [
+  const DEFAULT_FRUITS = [
     "🍓 Strawberries", "🫐 Blueberries", "🍌 Banana", "🍎 Apple slices", "🍊 Clementine / orange",
     "🍉 Watermelon", "🍈 Cantaloupe", "🥝 Kiwi", "🍇 Grapes (cut for little ones)", "🍐 Pear", "🍑 Peaches", "🥭 Mango"
   ];
 
-  const DK_KEY = "breakfastWheel.dkLastDate";
+  const PALETTE = ["#f6b94c", "#e88b4a", "#c9a26b", "#f4d35e", "#d8a47f", "#7fc8a9", "#e85d75", "#9bb7e0", "#b49be0", "#8fd16a"];
 
-  // Monday-start week, local time, as a YYYY-MM-DD key.
+  const KEYS = {
+    meals: "breakfastWheel.meals",
+    fruits: "breakfastWheel.fruits",
+    history: "breakfastWheel.history",
+    legacyDk: "breakfastWheel.dkLastDate"
+  };
+
+  // ---------- storage ----------
+  function load(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) { return fallback; }
+  }
+  function save(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+  const clone = x => JSON.parse(JSON.stringify(x));
+
+  let meals = load(KEYS.meals, clone(DEFAULT_MEALS));
+  let fruits = load(KEYS.fruits, DEFAULT_FRUITS.slice());
+  let history = load(KEYS.history, []); // [{date: "YYYY-MM-DD", mealId, name, emoji, fruit}]
+
+  // One-time migration from the first version, which only remembered the last DK date.
+  try {
+    const legacy = localStorage.getItem(KEYS.legacyDk);
+    if (legacy) {
+      if (!history.some(h => h.date === legacy && h.mealId === "dk")) {
+        history.push({ date: legacy, mealId: "dk", name: "Go out to DK!", emoji: "🎉", fruit: "" });
+        save(KEYS.history, history);
+      }
+      localStorage.removeItem(KEYS.legacyDk);
+    }
+  } catch (e) {}
+
+  // ---------- dates ----------
+  function ymd(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function parseYmd(s) {
+    const [y, m, d] = s.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  // Monday-start week, as the YYYY-MM-DD of that Monday.
   function weekStart(d) {
     const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    const day = (x.getDay() + 6) % 7; // Mon=0 ... Sun=6
-    x.setDate(x.getDate() - day);
-    return x.toISOString().slice(0, 10);
+    x.setDate(x.getDate() - (x.getDay() + 6) % 7);
+    return ymd(x);
   }
-  function getDkDate() {
-    try { return localStorage.getItem(DK_KEY); } catch (e) { return null; }
+  function daysAgo(dateStr) {
+    const today = parseYmd(ymd(new Date()));
+    return Math.round((today - parseYmd(dateStr)) / 86400000);
   }
-  function setDkDate(v) {
-    try { v ? localStorage.setItem(DK_KEY, v) : localStorage.removeItem(DK_KEY); } catch (e) {}
-  }
-  function dkUsedThisWeek() {
-    const last = getDkDate();
-    return !!last && weekStart(new Date(last + "T12:00:00")) === weekStart(new Date());
-  }
-  function isAvailable(meal) {
-    return !(meal.weekly && dkUsedThisWeek());
+  function dayLabel(dateStr) {
+    const n = daysAgo(dateStr);
+    if (n === 0) return "Today";
+    if (n === 1) return "Yesterday";
+    const d = parseYmd(dateStr);
+    if (n < 7) return d.toLocaleDateString(undefined, { weekday: "long" });
+    return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
   }
 
+  // ---------- rules ----------
+  function usedThisWeek(meal) {
+    const wk = weekStart(new Date());
+    return history.some(h => h.mealId === meal.id && weekStart(parseYmd(h.date)) === wk);
+  }
+  function isAvailable(meal) {
+    return !(meal.weekly && usedThisWeek(meal));
+  }
+
+  // ---------- wheel ----------
   const canvas = document.getElementById("wheel");
   const ctx = canvas.getContext("2d");
-  const N = MEALS.length;
-  const SLICE = (2 * Math.PI) / N;
-  let rotation = 0;        // radians
+  let rotation = 0;
   let spinning = false;
-  let current = null;
+  let current = null; // { meal, fruit }
 
   function draw() {
     const W = canvas.width, R = W / 2 - 10;
+    const N = Math.max(meals.length, 1);
+    const SLICE = (2 * Math.PI) / N;
+    const locked = getComputedStyle(document.documentElement).getPropertyValue("--locked").trim();
+    const fontPx = N <= 8 ? 30 : N <= 12 ? 24 : 18;
     ctx.clearRect(0, 0, W, W);
     ctx.save();
     ctx.translate(W / 2, W / 2);
     ctx.rotate(rotation);
-    MEALS.forEach((m, i) => {
+    meals.forEach((m, i) => {
       const start = i * SLICE - Math.PI / 2;
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.arc(0, 0, R, start, start + SLICE);
       ctx.closePath();
-      ctx.fillStyle = isAvailable(m) ? m.color : getComputedStyle(document.documentElement).getPropertyValue("--locked");
+      ctx.fillStyle = isAvailable(m) ? m.color : locked;
       ctx.fill();
       ctx.lineWidth = 6;
       ctx.strokeStyle = "#ffffff";
@@ -209,15 +358,17 @@
 
       ctx.save();
       ctx.rotate(start + SLICE / 2);
-      ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#2b2118";
-      ctx.font = "bold 30px 'Trebuchet MS', sans-serif";
-      const label = (m.short || m.name) + (isAvailable(m) ? "" : " 🔒");
+      let label = m.name.replace(/!+$/, "");
+      if (label.length > 16) label = label.slice(0, 15) + "…";
+      if (!isAvailable(m)) label += " 🔒";
+      ctx.textAlign = "right";
+      ctx.font = "bold " + fontPx + "px 'Trebuchet MS', sans-serif";
       ctx.fillText(label, R - 24, 0);
-      ctx.font = "48px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(m.emoji, R * 0.2, 0);
+      ctx.font = Math.round(fontPx * 1.5) + "px sans-serif";
+      ctx.fillText(m.emoji || "", R * 0.3, 0);
       ctx.restore();
     });
     ctx.restore();
@@ -234,14 +385,19 @@
 
   function spin() {
     if (spinning) return;
-    const choices = MEALS.map((m, i) => i).filter(i => isAvailable(MEALS[i]));
+    const choices = meals.map((m, i) => i).filter(i => isAvailable(meals[i]));
+    if (!choices.length) {
+      alert("Nothing left on the wheel! Add a breakfast in the Menu tab.");
+      return;
+    }
+    const SLICE = (2 * Math.PI) / meals.length;
     const target = choices[Math.floor(Math.random() * choices.length)];
     // Land somewhere inside the slice (not right on an edge) under the top pointer.
-    const offset = (0.15 + Math.random() * 0.7) * SLICE;
-    const sliceAngle = target * SLICE + offset;
+    const sliceAngle = target * SLICE + (0.15 + Math.random() * 0.7) * SLICE;
     const base = rotation - (rotation % (2 * Math.PI));
     const end = base + 2 * Math.PI * (5 + Math.floor(Math.random() * 3)) + (2 * Math.PI - sliceAngle);
     const startRot = rotation, duration = 4500, t0 = performance.now();
+    const meal = meals[target];
 
     spinning = true;
     document.getElementById("spin").disabled = true;
@@ -249,31 +405,30 @@
 
     function frame(now) {
       const t = Math.min(1, (now - t0) / duration);
-      const ease = 1 - Math.pow(1 - t, 4);
-      rotation = startRot + (end - startRot) * ease;
+      rotation = startRot + (end - startRot) * (1 - Math.pow(1 - t, 4));
       draw();
       if (t < 1) return requestAnimationFrame(frame);
       spinning = false;
       document.getElementById("spin").disabled = false;
-      showResult(MEALS[target]);
+      showResult(meal);
     }
     requestAnimationFrame(frame);
   }
 
   function showResult(meal) {
-    current = meal;
-    const fruit = FRUITS[Math.floor(Math.random() * FRUITS.length)];
-    document.getElementById("meal-name").textContent = meal.emoji + " " + meal.name;
+    const fruit = fruits.length ? fruits[Math.floor(Math.random() * fruits.length)] : "";
+    current = { meal, fruit };
+    document.getElementById("meal-name").textContent = (meal.emoji ? meal.emoji + " " : "") + meal.name;
     document.getElementById("meal-heavy").innerHTML = meal.heavy
       ? '<span class="note">Heavier meal</span><span class="tag">balance it out</span>' : "";
     const plate = document.getElementById("meal-plate");
     plate.innerHTML = "";
-    [...meal.plate, "Fruit: " + fruit].forEach(item => {
+    [...meal.plate, ...(fruit ? ["Fruit: " + fruit] : [])].forEach(item => {
       const li = document.createElement("li");
       li.textContent = item;
       plate.appendChild(li);
     });
-    document.getElementById("meal-tip").textContent = "💡 " + meal.tip;
+    document.getElementById("meal-tip").textContent = meal.tip ? "💡 " + meal.tip : "";
     const lock = document.getElementById("lock");
     lock.disabled = false;
     lock.textContent = "✅ We're having this!";
@@ -282,31 +437,249 @@
 
   function lockIn() {
     if (!current) return;
-    if (current.weekly) {
-      const d = new Date();
-      setDkDate(d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"));
-      updateDkStatus();
-      draw();
-    }
+    const { meal, fruit } = current;
+    history.push({ date: ymd(new Date()), mealId: meal.id, name: meal.name, emoji: meal.emoji, fruit });
+    save(KEYS.history, history);
     const lock = document.getElementById("lock");
     lock.disabled = true;
     lock.textContent = "Enjoy! 😋";
+    current = null;
+    refresh();
   }
 
-  function updateDkStatus() {
-    document.getElementById("dk-status").textContent = dkUsedThisWeek()
-      ? "already used this week 🔒 — back on the wheel next Monday."
-      : "available this week ✅";
+  function renderWeekly() {
+    const weekly = meals.filter(m => m.weekly);
+    document.getElementById("weekly-card").classList.toggle("hidden", !weekly.length);
+    const ul = document.getElementById("weekly-status");
+    ul.innerHTML = "";
+    weekly.forEach(m => {
+      const li = document.createElement("li");
+      li.textContent = (m.emoji ? m.emoji + " " : "") + m.name + " — " +
+        (usedThisWeek(m) ? "already used this week 🔒 (back next Monday)" : "available this week ✅");
+      ul.appendChild(li);
+    });
   }
+
+  // ---------- history ----------
+  function renderHistory() {
+    const list = document.getElementById("history");
+    list.innerHTML = "";
+    const entries = history.map((h, i) => ({ ...h, i }))
+      .sort((a, b) => b.date.localeCompare(a.date) || b.i - a.i)
+      .slice(0, 30);
+    document.getElementById("history-empty").classList.toggle("hidden", entries.length > 0);
+    entries.forEach(h => {
+      const li = document.createElement("li");
+      const day = document.createElement("span");
+      day.className = "day";
+      day.textContent = dayLabel(h.date);
+      const what = document.createElement("span");
+      what.className = "what";
+      what.textContent = (h.emoji ? h.emoji + " " : "") + h.name;
+      if (h.fruit) {
+        const f = document.createElement("span");
+        f.className = "fruit";
+        f.textContent = "with " + h.fruit;
+        what.appendChild(f);
+      }
+      const del = document.createElement("button");
+      del.className = "icon";
+      del.title = "Remove this entry";
+      del.setAttribute("aria-label", "Remove " + h.name + " on " + h.date);
+      del.textContent = "✕";
+      del.addEventListener("click", () => {
+        if (!confirm("Remove " + h.name + " (" + dayLabel(h.date) + ") from history?")) return;
+        history.splice(h.i, 1);
+        save(KEYS.history, history);
+        refresh();
+      });
+      li.append(day, what, del);
+      list.appendChild(li);
+    });
+
+    const counts = {};
+    history.filter(h => daysAgo(h.date) < 7).forEach(h => {
+      const k = (h.emoji ? h.emoji + " " : "") + h.name;
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    const cl = document.getElementById("history-counts");
+    cl.innerHTML = "";
+    const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    document.getElementById("history-counts-empty").classList.toggle("hidden", rows.length > 0);
+    rows.forEach(([k, n]) => {
+      const li = document.createElement("li");
+      li.textContent = k + " — " + n + (n === 1 ? " time" : " times");
+      cl.appendChild(li);
+    });
+  }
+
+  // ---------- menu editor ----------
+  function saveMeals() { save(KEYS.meals, meals); draw(); renderWeekly(); }
+
+  function field(labelText, input) {
+    const wrap = document.createElement("div");
+    const l = document.createElement("label");
+    l.textContent = labelText;
+    wrap.append(l, input);
+    return wrap;
+  }
+  function textInput(value, onInput) {
+    const el = document.createElement("input");
+    el.type = "text";
+    el.value = value || "";
+    el.addEventListener("input", () => onInput(el.value));
+    return el;
+  }
+  function checkbox(text, checked, onChange) {
+    const l = document.createElement("label");
+    l.className = "check";
+    const c = document.createElement("input");
+    c.type = "checkbox";
+    c.checked = !!checked;
+    c.addEventListener("change", () => onChange(c.checked));
+    l.append(c, document.createTextNode(text));
+    return l;
+  }
+
+  function renderMenuEditor(openIndex) {
+    const root = document.getElementById("meal-editor");
+    root.innerHTML = "";
+    meals.forEach((m, i) => {
+      const d = document.createElement("details");
+      d.className = "meal";
+      if (i === openIndex) d.open = true;
+
+      const s = document.createElement("summary");
+      const sw = document.createElement("span");
+      sw.className = "swatch";
+      const title = document.createElement("span");
+      const flags = document.createElement("span");
+      flags.className = "flags";
+      const updateSummary = () => {
+        sw.style.background = m.color;
+        title.textContent = (m.emoji ? m.emoji + " " : "") + (m.name || "(no name)");
+        flags.textContent = [m.weekly ? "once a week" : "", m.heavy ? "heavy" : ""].filter(Boolean).join(" · ");
+      };
+      updateSummary();
+      s.append(sw, title, flags);
+      d.appendChild(s);
+
+      const body = document.createElement("div");
+      body.className = "body";
+
+      const row = document.createElement("div");
+      row.className = "row";
+      const nameF = field("Name", textInput(m.name, v => { m.name = v; updateSummary(); saveMeals(); }));
+      const emojiF = field("Emoji", textInput(m.emoji, v => { m.emoji = v.trim(); updateSummary(); saveMeals(); }));
+      emojiF.className = "emoji";
+      emojiF.style.flex = "0 0 70px";
+      const color = document.createElement("input");
+      color.type = "color";
+      color.value = m.color;
+      color.addEventListener("input", () => { m.color = color.value; updateSummary(); saveMeals(); });
+      const colorF = field("Color", color);
+      colorF.style.flex = "0 0 56px";
+      row.append(nameF, emojiF, colorF);
+      body.appendChild(row);
+
+      body.appendChild(checkbox("Only once a week (like going out)", m.weekly, v => { m.weekly = v; updateSummary(); saveMeals(); }));
+      body.appendChild(checkbox("Heavier meal (shows “balance it out”)", m.heavy, v => { m.heavy = v; updateSummary(); saveMeals(); }));
+
+      const plate = document.createElement("textarea");
+      plate.value = (m.plate || []).join("\n");
+      plate.addEventListener("input", () => {
+        m.plate = plate.value.split("\n").map(x => x.trim()).filter(Boolean);
+        saveMeals();
+      });
+      body.appendChild(field("What goes on the plate (one per line — a fruit is added automatically)", plate));
+
+      const tip = document.createElement("textarea");
+      tip.value = m.tip || "";
+      tip.addEventListener("input", () => { m.tip = tip.value.trim(); saveMeals(); });
+      body.appendChild(field("Tip", tip));
+
+      const actions = document.createElement("div");
+      actions.className = "controls";
+      actions.style.margin = "12px 0 0";
+      const up = document.createElement("button");
+      up.className = "secondary small";
+      up.textContent = "↑ Move up";
+      up.disabled = i === 0;
+      up.addEventListener("click", () => {
+        [meals[i - 1], meals[i]] = [meals[i], meals[i - 1]];
+        saveMeals(); renderMenuEditor(i - 1);
+      });
+      const del = document.createElement("button");
+      del.className = "secondary small danger";
+      del.textContent = "🗑 Remove";
+      del.addEventListener("click", () => {
+        if (meals.length <= 2) { alert("Keep at least 2 breakfasts on the wheel."); return; }
+        if (!confirm("Remove " + (m.name || "this breakfast") + " from the wheel?")) return;
+        meals.splice(i, 1);
+        saveMeals(); renderMenuEditor();
+      });
+      actions.append(up, del);
+      body.appendChild(actions);
+
+      d.appendChild(body);
+      root.appendChild(d);
+    });
+
+    document.getElementById("fruit-editor").value = fruits.join("\n");
+  }
+
+  document.getElementById("add-meal").addEventListener("click", () => {
+    meals.push({
+      id: "meal-" + Date.now().toString(36),
+      name: "New breakfast", emoji: "🍽️", color: PALETTE[meals.length % PALETTE.length],
+      heavy: false, weekly: false, plate: ["Something with protein", "Glass of milk"], tip: ""
+    });
+    saveMeals();
+    renderMenuEditor(meals.length - 1);
+    const inputs = document.querySelectorAll("#meal-editor details[open] input[type=text]");
+    if (inputs[0]) { inputs[0].focus(); inputs[0].select(); }
+  });
+
+  document.getElementById("fruit-editor").addEventListener("input", e => {
+    fruits = e.target.value.split("\n").map(x => x.trim()).filter(Boolean);
+    save(KEYS.fruits, fruits);
+  });
+
+  document.getElementById("reset-menu").addEventListener("click", () => {
+    if (!confirm("Put the breakfasts and fruits back to the original list? Your history is kept.")) return;
+    meals = clone(DEFAULT_MEALS);
+    fruits = DEFAULT_FRUITS.slice();
+    save(KEYS.meals, meals);
+    save(KEYS.fruits, fruits);
+    renderMenuEditor();
+    refresh();
+  });
+
+  document.getElementById("clear-history").addEventListener("click", () => {
+    if (!confirm("Clear all breakfast history? This also unlocks the once-a-week treats.")) return;
+    history = [];
+    save(KEYS.history, history);
+    refresh();
+  });
+
+  // ---------- tabs ----------
+  document.querySelectorAll(".tabs button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(b === btn)));
+      ["spin", "history", "menu"].forEach(t =>
+        document.getElementById("tab-" + t).classList.toggle("hidden", t !== btn.dataset.tab));
+      if (btn.dataset.tab === "history") renderHistory();
+      if (btn.dataset.tab === "spin") draw();
+    });
+  });
+
+  function refresh() { draw(); renderWeekly(); renderHistory(); }
 
   document.getElementById("spin").addEventListener("click", spin);
   document.getElementById("lock").addEventListener("click", lockIn);
-  document.getElementById("reset-dk").addEventListener("click", () => {
-    setDkDate(null); updateDkStatus(); draw();
-  });
 
-  updateDkStatus();
-  draw();
+  renderMenuEditor();
+  refresh();
 </script>
 </body>
 </html>
