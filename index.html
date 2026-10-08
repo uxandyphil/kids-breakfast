@@ -15,6 +15,7 @@
     --border: #f0dcc2;
     --locked: #d8d2ca;
     --danger: #c0392b;
+    --ok: #2e8b57;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -27,6 +28,7 @@
       --border: #43372c;
       --locked: #4a433c;
       --danger: #ff6b5b;
+      --ok: #5fd08f;
     }
   }
   * { box-sizing: border-box; }
@@ -40,29 +42,39 @@
     align-items: center;
     padding: 16px;
     min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
   }
-  h1 { margin: 8px 0 4px; font-size: 2rem; text-align: center; }
-  .sub { margin: 0 0 12px; color: var(--muted); text-align: center; }
+  header { width: min(100%, 460px); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  h1 { margin: 4px 0; font-size: clamp(1.15rem, 5.5vw, 1.7rem); white-space: nowrap; }
+  .pill {
+    font-size: .8rem; padding: 4px 10px; border-radius: 999px; border: 2px solid var(--border);
+    background: var(--card); color: var(--muted); cursor: pointer; white-space: nowrap;
+  }
+  .pill.ok { color: var(--ok); }
+  .pill.error { color: var(--danger); }
   .tabs {
     display: flex; gap: 4px; background: var(--card); border: 2px solid var(--border);
-    border-radius: 999px; padding: 4px; margin-bottom: 16px;
+    border-radius: 999px; padding: 4px; margin: 10px 0 16px;
   }
   .tabs button {
     background: transparent; color: var(--ink); box-shadow: none;
-    font-size: 1rem; padding: 8px 18px;
+    font-size: 1rem; padding: 8px 16px;
   }
   .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
   .panel { width: 100%; display: flex; flex-direction: column; align-items: center; }
-  .wheel-wrap { position: relative; width: min(90vw, 420px); aspect-ratio: 1; }
-  canvas { width: 100%; height: 100%; display: block; }
+
+  /* Wheel */
+  .wheel-wrap { position: relative; width: min(94vw, 460px); aspect-ratio: 1; cursor: pointer; touch-action: manipulation; }
+  canvas#wheel { width: 100%; height: 100%; display: block; }
   .pointer {
-    position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
-    width: 0; height: 0;
-    border-left: 18px solid transparent; border-right: 18px solid transparent;
-    border-top: 32px solid var(--accent);
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,.3));
-    z-index: 2;
+    position: absolute; top: -14px; left: 50%; width: 56px; height: 64px; margin-left: -28px;
+    z-index: 2; transform-origin: 50% 20%; pointer-events: none;
+    filter: drop-shadow(0 3px 2px rgba(0,0,0,.35));
   }
+  .pointer.wiggle { animation: wiggle .12s ease-out; }
+  @keyframes wiggle { 0% { transform: rotate(0) } 40% { transform: rotate(-18deg) } 100% { transform: rotate(0) } }
+  .tap-hint { color: var(--muted); margin: 8px 0 0; font-size: .95rem; }
+
   button {
     font: inherit; font-weight: bold; cursor: pointer; border: none;
     border-radius: 999px; padding: 14px 36px; font-size: 1.3rem;
@@ -81,6 +93,14 @@
     background: transparent; color: var(--muted); box-shadow: none;
     padding: 4px 10px; font-size: 1.1rem;
   }
+  #spin {
+    font-size: 2rem; padding: 18px 64px; letter-spacing: 2px;
+    background: linear-gradient(180deg, #ff8a3d, #e8452a); color: #fff;
+    box-shadow: 0 6px 0 #a8321d, 0 10px 20px rgba(232,69,42,.35);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  #spin:disabled { animation: none; }
+  @keyframes pulse { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.06) } }
   .controls { margin: 20px 0; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   .card {
     background: var(--card); border: 2px solid var(--border); border-radius: 16px;
@@ -97,6 +117,22 @@
   }
   .note { color: var(--muted); font-size: .9rem; }
   .hidden { display: none !important; }
+
+  /* Celebration */
+  .overlay {
+    position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 16px;
+    background: rgba(255, 248, 236, .92); cursor: pointer;
+  }
+  @media (prefers-color-scheme: dark) { .overlay { background: rgba(29, 24, 20, .92); } }
+  .overlay .big-emoji { font-size: min(48vw, 220px); line-height: 1.1; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both, float 1.4s ease-in-out .7s infinite; }
+  .overlay .big-name { font-size: clamp(2rem, 10vw, 3.2rem); font-weight: bold; margin-top: 8px; animation: pop .5s .25s both; }
+  .overlay .yay { font-size: 1.6rem; margin-top: 6px; animation: pop .5s .45s both; }
+  .overlay .note { margin-top: 24px; }
+  @keyframes bounce-in { 0% { transform: scale(0) rotate(-30deg) } 100% { transform: scale(1) rotate(0) } }
+  @keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
+  @keyframes pop { 0% { opacity: 0; transform: scale(.6) } 100% { opacity: 1; transform: scale(1) } }
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 11; }
 
   /* History */
   .history { list-style: none; padding: 0 !important; margin: 0 !important; }
@@ -121,7 +157,7 @@
   details.meal .body { padding: 0 12px 12px; }
   label { display: block; font-size: .85rem; color: var(--muted); margin: 10px 0 4px; }
   label.check { display: flex; align-items: center; gap: 8px; color: var(--ink); font-size: .95rem; }
-  input[type=text], textarea {
+  input[type=text], input[type=url], input[type=password], textarea {
     width: 100%; font: inherit; padding: 8px 10px; border-radius: 8px;
     border: 2px solid var(--border); background: var(--bg); color: var(--ink);
   }
@@ -133,8 +169,13 @@
 </style>
 </head>
 <body>
-  <h1>🍳 Breakfast Wheel 🥞</h1>
-  <p class="sub">Spin it to pick today's breakfast!</p>
+  <header>
+    <h1>🍳 Breakfast Wheel</h1>
+    <div style="display:flex; gap:6px; align-items:center">
+      <span id="sync-pill" class="pill" title="Sync status"></span>
+      <button id="sound" class="icon" aria-label="Sound on" title="Sound">🔊</button>
+    </div>
+  </header>
 
   <div class="tabs" role="tablist">
     <button role="tab" data-tab="spin" aria-selected="true">🎡 Spin</button>
@@ -144,13 +185,17 @@
 
   <!-- SPIN -->
   <section id="tab-spin" class="panel">
-    <div class="wheel-wrap">
-      <div class="pointer"></div>
-      <canvas id="wheel" width="840" height="840"></canvas>
+    <div class="wheel-wrap" id="wheel-wrap" role="button" aria-label="Spin the wheel">
+      <svg class="pointer" id="pointer" viewBox="0 0 56 64" aria-hidden="true">
+        <path d="M28 62 L6 14 A24 24 0 1 1 50 14 Z" fill="#e8452a" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+        <circle cx="28" cy="22" r="8" fill="#fff"/>
+      </svg>
+      <canvas id="wheel" width="900" height="900"></canvas>
     </div>
+    <p class="tap-hint">Tap the wheel or the button!</p>
 
     <div class="controls">
-      <button id="spin">SPIN!</button>
+      <button id="spin">🎡 SPIN!</button>
     </div>
 
     <div id="result" class="card hidden" aria-live="polite">
@@ -192,7 +237,7 @@
   <section id="tab-menu" class="panel hidden">
     <div class="card">
       <h3>Breakfasts on the wheel</h3>
-      <p class="note" style="margin-top:0">Tap one to edit it. Changes save automatically on this device.</p>
+      <p class="note" style="margin-top:0">Tap one to edit it. Changes save automatically.</p>
       <div id="meal-editor"></div>
       <div class="controls" style="margin-bottom:0">
         <button id="add-meal" class="secondary">➕ Add a breakfast</button>
@@ -203,47 +248,91 @@
       <p class="note" style="margin-top:0">One per line. A random one is added to every breakfast.</p>
       <textarea id="fruit-editor" rows="8"></textarea>
     </div>
+
+    <div class="card" id="sync-card">
+      <h3>☁️ Sync across devices</h3>
+      <div id="sync-off">
+        <p class="note" style="margin-top:0">Share the menu and history between phones and tablets.
+          Uses a free <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a> project —
+          see the setup steps in the
+          <a href="https://github.com/uxandyphil/kids-breakfast#sync-across-devices" target="_blank" rel="noopener">README</a>.
+          Already set up on another device? Just open the setup link from that device instead.</p>
+        <label for="sync-url">Supabase Project URL</label>
+        <input id="sync-url" type="url" placeholder="https://xxxx.supabase.co" autocomplete="off">
+        <label for="sync-key">Publishable (anon) key</label>
+        <input id="sync-key" type="password" placeholder="sb_publishable_… or eyJ…" autocomplete="off">
+        <label for="sync-code">Family code (a secret shared by your devices)</label>
+        <div class="row">
+          <div><input id="sync-code" type="text" autocomplete="off"></div>
+          <button id="sync-gen" class="secondary small" style="flex:none">Make one</button>
+        </div>
+        <p id="sync-error" class="note hidden" style="color:var(--danger)"></p>
+        <div class="controls" style="margin-bottom:0">
+          <button id="sync-connect" class="secondary">Connect</button>
+        </div>
+      </div>
+      <div id="sync-on" class="hidden">
+        <p style="margin-top:0"><strong style="color:var(--ok)">Connected ✅</strong>
+          <span id="sync-last" class="note"></span></p>
+        <p class="note">To add another phone or tablet, copy this link and open it there
+          (send it only to family — it unlocks your breakfast data).</p>
+        <div class="controls" style="margin-bottom:0">
+          <button id="sync-copy" class="secondary small">📋 Copy setup link</button>
+          <button id="sync-now" class="secondary small">🔄 Sync now</button>
+          <button id="sync-disconnect" class="secondary small danger">Disconnect this device</button>
+        </div>
+      </div>
+    </div>
+
     <div class="controls" style="margin-top:0">
       <button id="reset-menu" class="secondary danger">Reset menu to defaults</button>
     </div>
   </section>
+
+  <div id="celebrate" class="overlay hidden" role="dialog" aria-live="assertive">
+    <div class="big-emoji" id="big-emoji"></div>
+    <div class="big-name" id="big-name"></div>
+    <div class="yay">Yay! 🎉</div>
+    <p class="note">Tap anywhere to see the plate</p>
+  </div>
+  <canvas id="confetti"></canvas>
 
 <script>
   // Every meal is built to be balanced: main + fruit + protein (and a veggie where it fits).
   // "heavy" meals get extra tips to offset the sugar/carbs. "weekly" meals can be eaten once per week.
   const DEFAULT_MEALS = [
     {
-      id: "pancakes", name: "Pancakes", emoji: "🥞", color: "#f6b94c", heavy: true, weekly: false,
+      id: "pancakes", name: "Pancakes", emoji: "🥞", color: "#ffbe3d", heavy: true, weekly: false,
       plate: ["Pancakes (try whole-wheat or oat mix)", "Scrambled egg or turkey sausage for protein", "Glass of milk"],
       tip: "Top with berries or sliced banana and a little peanut butter or Greek yogurt instead of piling on syrup. Serve syrup on the side in a small cup for dipping."
     },
     {
-      id: "french-toast", name: "French Toast", emoji: "🍞", color: "#e88b4a", heavy: true, weekly: false,
+      id: "french-toast", name: "French Toast", emoji: "🍞", color: "#ff8c42", heavy: true, weekly: false,
       plate: ["French toast on whole-grain bread", "Extra egg in the batter = more protein", "Glass of milk"],
       tip: "Add cinnamon and vanilla so it needs less syrup. Top with warm berries or applesauce, and a spoonful of Greek yogurt."
     },
     {
-      id: "oatmeal", name: "Oatmeal / MUSH", emoji: "🥣", color: "#c9a26b", heavy: false, weekly: false,
+      id: "oatmeal", name: "Oatmeal / MUSH", emoji: "🥣", color: "#a0d468", heavy: false, weekly: false,
       plate: ["Oatmeal or MUSH overnight oats", "Stir in nut butter or chia seeds for protein", "Glass of milk"],
       tip: "Plain oats + your own fruit beats the sugary flavored packets. Hard-boiled egg on the side keeps everyone full longer."
     },
     {
-      id: "eggs", name: "Scrambled Eggs", emoji: "🍳", color: "#f4d35e", heavy: false, weekly: false,
+      id: "eggs", name: "Scrambled Eggs", emoji: "🍳", color: "#ffe14d", heavy: false, weekly: false,
       plate: ["Scrambled eggs", "Whole-grain toast", "Sneak in spinach, peppers, or cheese"],
       tip: "Already protein-packed! Just add a fruit and some whole grains."
     },
     {
-      id: "bagels", name: "Bagels", emoji: "🥯", color: "#d8a47f", heavy: true, weekly: false,
+      id: "bagels", name: "Bagels", emoji: "🥯", color: "#c39bd3", heavy: true, weekly: false,
       plate: ["Bagel (whole-wheat if you've got it — or half a bagel)", "Cream cheese, peanut butter, or egg + cheese sandwich", "Cucumber or tomato slices"],
       tip: "Bagels are mostly carbs, so add protein (egg, PB, or cheese) and pair with fruit."
     },
     {
-      id: "cereal", name: "Cereal", emoji: "🥛", color: "#7fc8a9", heavy: false, weekly: false,
+      id: "cereal", name: "Cereal", emoji: "🥛", color: "#5dade2", heavy: false, weekly: false,
       plate: ["Cereal (pick one with less sugar and more fiber)", "Milk", "Yogurt or a cheese stick for protein"],
       tip: "Mix a sugary cereal half-and-half with a plain one, and slice fruit right on top."
     },
     {
-      id: "dk", name: "Go out to DK!", emoji: "🎉", color: "#e85d75", heavy: true, weekly: true,
+      id: "dk", name: "Go out to DK!", emoji: "🍩", color: "#ff6b9d", heavy: true, weekly: true,
       plate: ["Pick one treat each", "Add an egg sandwich or something with protein if you can", "Milk or water instead of juice/soda"],
       tip: "Treat day! Bring fruit from home for the car (clementines, apple slices, grapes) and keep lunch light and veggie-heavy."
     }
@@ -254,12 +343,15 @@
     "🍉 Watermelon", "🍈 Cantaloupe", "🥝 Kiwi", "🍇 Grapes (cut for little ones)", "🍐 Pear", "🍑 Peaches", "🥭 Mango"
   ];
 
-  const PALETTE = ["#f6b94c", "#e88b4a", "#c9a26b", "#f4d35e", "#d8a47f", "#7fc8a9", "#e85d75", "#9bb7e0", "#b49be0", "#8fd16a"];
+  const PALETTE = ["#ffbe3d", "#ff8c42", "#a0d468", "#ffe14d", "#c39bd3", "#5dade2", "#ff6b9d", "#48c9b0", "#f1948a", "#85c1e9"];
 
   const KEYS = {
     meals: "breakfastWheel.meals",
     fruits: "breakfastWheel.fruits",
     history: "breakfastWheel.history",
+    updatedAt: "breakfastWheel.updatedAt",
+    sync: "breakfastWheel.sync",
+    sound: "breakfastWheel.sound",
     legacyDk: "breakfastWheel.dkLastDate"
   };
 
@@ -271,25 +363,47 @@
     } catch (e) { return fallback; }
   }
   function save(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+    try { value == null ? localStorage.removeItem(key) : localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
   }
   const clone = x => JSON.parse(JSON.stringify(x));
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-  let meals = load(KEYS.meals, clone(DEFAULT_MEALS));
-  let fruits = load(KEYS.fruits, DEFAULT_FRUITS.slice());
-  let history = load(KEYS.history, []); // [{date: "YYYY-MM-DD", mealId, name, emoji, fruit}]
+  // The whole shared state. When sync is on, the server copy is the source of truth.
+  const state = {
+    meals: load(KEYS.meals, clone(DEFAULT_MEALS)),
+    fruits: load(KEYS.fruits, DEFAULT_FRUITS.slice()),
+    history: load(KEYS.history, []), // [{id, date: "YYYY-MM-DD", mealId, name, emoji, fruit}]
+    updatedAt: load(KEYS.updatedAt, 0)
+  };
+  normalize(state);
+
+  function normalize(s) {
+    if (!Array.isArray(s.meals) || !s.meals.length) s.meals = clone(DEFAULT_MEALS);
+    if (!Array.isArray(s.fruits)) s.fruits = DEFAULT_FRUITS.slice();
+    if (!Array.isArray(s.history)) s.history = [];
+    s.meals.forEach(m => { m.id = m.id || newId(); m.plate = Array.isArray(m.plate) ? m.plate : []; });
+    s.history.forEach(h => { h.id = h.id || newId(); });
+    s.updatedAt = s.updatedAt || 0;
+    return s;
+  }
+  function saveLocal() {
+    save(KEYS.meals, state.meals);
+    save(KEYS.fruits, state.fruits);
+    save(KEYS.history, state.history);
+    save(KEYS.updatedAt, state.updatedAt);
+  }
 
   // One-time migration from the first version, which only remembered the last DK date.
   try {
     const legacy = localStorage.getItem(KEYS.legacyDk);
     if (legacy) {
-      if (!history.some(h => h.date === legacy && h.mealId === "dk")) {
-        history.push({ date: legacy, mealId: "dk", name: "Go out to DK!", emoji: "🎉", fruit: "" });
-        save(KEYS.history, history);
+      if (!state.history.some(h => h.date === legacy && h.mealId === "dk")) {
+        state.history.push({ id: newId(), date: legacy, mealId: "dk", name: "Go out to DK!", emoji: "🍩", fruit: "" });
       }
       localStorage.removeItem(KEYS.legacyDk);
     }
   } catch (e) {}
+  saveLocal();
 
   // ---------- dates ----------
   function ymd(d) {
@@ -321,70 +435,176 @@
   // ---------- rules ----------
   function usedThisWeek(meal) {
     const wk = weekStart(new Date());
-    return history.some(h => h.mealId === meal.id && weekStart(parseYmd(h.date)) === wk);
+    return state.history.some(h => h.mealId === meal.id && weekStart(parseYmd(h.date)) === wk);
   }
   function isAvailable(meal) {
     return !(meal.weekly && usedThisWeek(meal));
   }
+
+  // ---------- sound ----------
+  let soundOn = load(KEYS.sound, true);
+  let audioCtx = null;
+  function audio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+    }
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+  function tone(freq, dur, type, vol, when) {
+    if (!soundOn) return;
+    const a = audio();
+    if (!a) return;
+    const o = a.createOscillator(), g = a.createGain();
+    const t = a.currentTime + (when || 0);
+    o.type = type || "sine";
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol || 0.15, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g).connect(a.destination);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  }
+  const tick = () => tone(1400, 0.035, "square", 0.04);
+  function fanfare() {
+    [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.28, "triangle", 0.18, i * 0.12));
+    tone(1047, 0.6, "triangle", 0.14, 0.5);
+  }
+  function say(text) {
+    if (!soundOn || !("speechSynthesis" in window)) return;
+    try {
+      const u = new SpeechSynthesisUtterance(text.replace(/[!/]/g, " "));
+      u.rate = 0.85;
+      u.pitch = 1.3;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function renderSound() {
+    const b = document.getElementById("sound");
+    b.textContent = soundOn ? "🔊" : "🔇";
+    b.setAttribute("aria-label", soundOn ? "Sound on" : "Sound off");
+  }
+  document.getElementById("sound").addEventListener("click", () => {
+    soundOn = !soundOn;
+    save(KEYS.sound, soundOn);
+    renderSound();
+    if (soundOn) tick();
+  });
 
   // ---------- wheel ----------
   const canvas = document.getElementById("wheel");
   const ctx = canvas.getContext("2d");
   let rotation = 0;
   let spinning = false;
+  let lightPhase = 0;
   let current = null; // { meal, fruit }
 
+  function fitText(text, maxWidth, startPx, minPx) {
+    let px = startPx;
+    for (; px > minPx; px -= 2) {
+      ctx.font = "bold " + px + "px 'Trebuchet MS', sans-serif";
+      if (ctx.measureText(text).width <= maxWidth) return text;
+    }
+    ctx.font = "bold " + minPx + "px 'Trebuchet MS', sans-serif";
+    if (ctx.measureText(text).width <= maxWidth) return text;
+    while (text.length > 3 && ctx.measureText(text + "…").width > maxWidth) text = text.slice(0, -1);
+    return text + "…";
+  }
+
   function draw() {
-    const W = canvas.width, R = W / 2 - 10;
+    const meals = state.meals;
+    const W = canvas.width, C = W / 2, RIM = 26, R = C - RIM - 6;
     const N = Math.max(meals.length, 1);
     const SLICE = (2 * Math.PI) / N;
-    const locked = getComputedStyle(document.documentElement).getPropertyValue("--locked").trim();
-    const fontPx = N <= 8 ? 30 : N <= 12 ? 24 : 18;
+    const locked = getComputedStyle(document.documentElement).getPropertyValue("--locked").trim() || "#d8d2ca";
+    const emojiPx = N <= 6 ? 120 : N <= 8 ? 104 : N <= 10 ? 84 : N <= 14 ? 62 : 44;
+    const labelPx = Math.max(18, Math.round(emojiPx * 0.3));
     ctx.clearRect(0, 0, W, W);
-    ctx.save();
-    ctx.translate(W / 2, W / 2);
-    ctx.rotate(rotation);
+
+    // Outer rim
+    ctx.beginPath();
+    ctx.arc(C, C, R + RIM, 0, 2 * Math.PI);
+    ctx.fillStyle = "#7a3b1d";
+    ctx.fill();
+
+    // Slices
     meals.forEach((m, i) => {
-      const start = i * SLICE - Math.PI / 2;
+      const start = rotation + i * SLICE - Math.PI / 2;
       ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.arc(0, 0, R, start, start + SLICE);
+      ctx.moveTo(C, C);
+      ctx.arc(C, C, R, start, start + SLICE);
       ctx.closePath();
       ctx.fillStyle = isAvailable(m) ? m.color : locked;
       ctx.fill();
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 8;
       ctx.strokeStyle = "#ffffff";
       ctx.stroke();
-
-      ctx.save();
-      ctx.rotate(start + SLICE / 2);
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "#2b2118";
-      let label = m.name.replace(/!+$/, "");
-      if (label.length > 16) label = label.slice(0, 15) + "…";
-      if (!isAvailable(m)) label += " 🔒";
-      ctx.textAlign = "right";
-      ctx.font = "bold " + fontPx + "px 'Trebuchet MS', sans-serif";
-      ctx.fillText(label, R - 24, 0);
-      ctx.textAlign = "center";
-      ctx.font = Math.round(fontPx * 1.5) + "px sans-serif";
-      ctx.fillText(m.emoji || "", R * 0.3, 0);
-      ctx.restore();
     });
-    ctx.restore();
 
+    // Big upright pictures + names (stay upright while the wheel turns, easier for little ones)
+    meals.forEach((m, i) => {
+      const mid = rotation + i * SLICE - Math.PI / 2 + SLICE / 2;
+      const r = R * (N <= 4 ? 0.55 : 0.62);
+      const x = C + Math.cos(mid) * r, y = C + Math.sin(mid) * r;
+      const avail = isAvailable(m);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.globalAlpha = avail ? 1 : 0.35;
+      ctx.font = emojiPx + "px sans-serif";
+      ctx.fillText(m.emoji || "🍽️", x, y - labelPx * 0.55);
+      ctx.globalAlpha = 1;
+      const maxW = Math.min(2 * Math.sin(Math.min(SLICE, Math.PI) / 2) * r * 0.92, R * 0.9);
+      const label = fitText(m.name.replace(/!+$/, ""), maxW, labelPx, 14);
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = "rgba(255,255,255,.85)";
+      ctx.strokeText(label, x, y + emojiPx * 0.5);
+      ctx.fillStyle = "#2b2118";
+      ctx.fillText(label, x, y + emojiPx * 0.5);
+      if (!avail) {
+        ctx.font = Math.round(emojiPx * 0.55) + "px sans-serif";
+        ctx.fillText("🔒", x + emojiPx * 0.45, y - labelPx * 0.55 - emojiPx * 0.35);
+      }
+    });
+
+    // Light bulbs around the rim
+    const bulbs = 24;
+    for (let k = 0; k < bulbs; k++) {
+      const a = (k / bulbs) * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.arc(C + Math.cos(a) * (R + RIM / 2 + 3), C + Math.sin(a) * (R + RIM / 2 + 3), 8, 0, 2 * Math.PI);
+      ctx.fillStyle = (k + lightPhase) % 2 ? "#fff3b0" : "#ffb703";
+      ctx.fill();
+    }
+
+    // Hub
     ctx.beginPath();
-    ctx.arc(W / 2, W / 2, 46, 0, 2 * Math.PI);
+    ctx.arc(C, C, 62, 0, 2 * Math.PI);
     ctx.fillStyle = "#ffffff";
     ctx.fill();
-    ctx.font = "48px sans-serif";
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = "#7a3b1d";
+    ctx.stroke();
+    ctx.font = "64px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("🍴", W / 2, W / 2 + 2);
+    ctx.fillText("😋", C, C + 4);
+  }
+
+  // Idle twinkle
+  setInterval(() => { if (!spinning) { lightPhase ^= 1; draw(); } }, 700);
+
+  function wigglePointer() {
+    const p = document.getElementById("pointer");
+    p.classList.remove("wiggle");
+    void p.getBoundingClientRect();
+    p.classList.add("wiggle");
   }
 
   function spin() {
     if (spinning) return;
+    audio(); // unlock audio on the user's tap
+    const meals = state.meals;
     const choices = meals.map((m, i) => i).filter(i => isAvailable(meals[i]));
     if (!choices.length) {
       alert("Nothing left on the wheel! Add a breakfast in the Menu tab.");
@@ -396,8 +616,10 @@
     const sliceAngle = target * SLICE + (0.15 + Math.random() * 0.7) * SLICE;
     const base = rotation - (rotation % (2 * Math.PI));
     const end = base + 2 * Math.PI * (5 + Math.floor(Math.random() * 3)) + (2 * Math.PI - sliceAngle);
-    const startRot = rotation, duration = 4500, t0 = performance.now();
+    const startRot = rotation, duration = 5000, t0 = performance.now();
     const meal = meals[target];
+    const sliceUnderPointer = rot => Math.floor((((-rot) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) / SLICE);
+    let lastSlice = sliceUnderPointer(rotation);
 
     spinning = true;
     document.getElementById("spin").disabled = true;
@@ -406,18 +628,33 @@
     function frame(now) {
       const t = Math.min(1, (now - t0) / duration);
       rotation = startRot + (end - startRot) * (1 - Math.pow(1 - t, 4));
+      lightPhase = Math.floor(now / 90) % 2;
+      const s = sliceUnderPointer(rotation);
+      if (s !== lastSlice) { lastSlice = s; tick(); wigglePointer(); }
       draw();
       if (t < 1) return requestAnimationFrame(frame);
       spinning = false;
       document.getElementById("spin").disabled = false;
       showResult(meal);
+      if (pendingRemote) { const r = pendingRemote; pendingRemote = null; applyRemote(r); }
     }
     requestAnimationFrame(frame);
   }
 
   function showResult(meal) {
-    const fruit = fruits.length ? fruits[Math.floor(Math.random() * fruits.length)] : "";
+    const fruit = state.fruits.length ? state.fruits[Math.floor(Math.random() * state.fruits.length)] : "";
     current = { meal, fruit };
+
+    // Big celebration for the little ones
+    document.getElementById("big-emoji").textContent = meal.emoji || "🍽️";
+    document.getElementById("big-name").textContent = meal.name;
+    document.getElementById("celebrate").classList.remove("hidden");
+    confetti();
+    fanfare();
+    setTimeout(() => say(meal.name), 700);
+    try { navigator.vibrate && navigator.vibrate([80, 60, 120]); } catch (e) {}
+
+    // Details for the grown-ups
     document.getElementById("meal-name").textContent = (meal.emoji ? meal.emoji + " " : "") + meal.name;
     document.getElementById("meal-heavy").innerHTML = meal.heavy
       ? '<span class="note">Heavier meal</span><span class="tag">balance it out</span>' : "";
@@ -435,20 +672,73 @@
     document.getElementById("result").classList.remove("hidden");
   }
 
+  document.getElementById("celebrate").addEventListener("click", () => {
+    document.getElementById("celebrate").classList.add("hidden");
+    document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  // ---------- confetti ----------
+  function confetti() {
+    const cv = document.getElementById("confetti");
+    const c = cv.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    cv.width = innerWidth * dpr;
+    cv.height = innerHeight * dpr;
+    c.scale(dpr, dpr);
+    const colors = ["#ff6b9d", "#ffbe3d", "#5dade2", "#a0d468", "#c39bd3", "#ff8c42", "#ffe14d"];
+    const parts = Array.from({ length: 160 }, () => ({
+      x: innerWidth / 2 + (Math.random() - 0.5) * 80,
+      y: innerHeight * 0.4,
+      vx: (Math.random() - 0.5) * 16,
+      vy: -Math.random() * 16 - 6,
+      w: 6 + Math.random() * 8,
+      h: 8 + Math.random() * 10,
+      rot: Math.random() * Math.PI,
+      vr: (Math.random() - 0.5) * 0.4,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    }));
+    const t0 = performance.now();
+    function step(now) {
+      c.clearRect(0, 0, innerWidth, innerHeight);
+      parts.forEach(p => {
+        p.vy += 0.45; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        c.save();
+        c.translate(p.x, p.y);
+        c.rotate(p.rot);
+        c.fillStyle = p.color;
+        c.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        c.restore();
+      });
+      if (now - t0 < 3000) requestAnimationFrame(step);
+      else c.clearRect(0, 0, innerWidth, innerHeight);
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ---------- changes (local + synced) ----------
+  // Every change is an idempotent function applied to the local state right away, then
+  // re-applied on top of the latest server copy, so two devices don't overwrite each other.
+  function change(op) {
+    op(state);
+    state.updatedAt = Date.now();
+    saveLocal();
+    refresh();
+    if (sync.cfg) sync.push(op);
+  }
+
   function lockIn() {
     if (!current) return;
     const { meal, fruit } = current;
-    history.push({ date: ymd(new Date()), mealId: meal.id, name: meal.name, emoji: meal.emoji, fruit });
-    save(KEYS.history, history);
+    const entry = { id: newId(), date: ymd(new Date()), mealId: meal.id, name: meal.name, emoji: meal.emoji, fruit };
+    change(s => { if (!s.history.some(h => h.id === entry.id)) s.history.push(entry); });
     const lock = document.getElementById("lock");
     lock.disabled = true;
     lock.textContent = "Enjoy! 😋";
     current = null;
-    refresh();
   }
 
   function renderWeekly() {
-    const weekly = meals.filter(m => m.weekly);
+    const weekly = state.meals.filter(m => m.weekly);
     document.getElementById("weekly-card").classList.toggle("hidden", !weekly.length);
     const ul = document.getElementById("weekly-status");
     ul.innerHTML = "";
@@ -464,7 +754,7 @@
   function renderHistory() {
     const list = document.getElementById("history");
     list.innerHTML = "";
-    const entries = history.map((h, i) => ({ ...h, i }))
+    const entries = state.history.map((h, i) => ({ ...h, i }))
       .sort((a, b) => b.date.localeCompare(a.date) || b.i - a.i)
       .slice(0, 30);
     document.getElementById("history-empty").classList.toggle("hidden", entries.length > 0);
@@ -489,16 +779,14 @@
       del.textContent = "✕";
       del.addEventListener("click", () => {
         if (!confirm("Remove " + h.name + " (" + dayLabel(h.date) + ") from history?")) return;
-        history.splice(h.i, 1);
-        save(KEYS.history, history);
-        refresh();
+        change(s => { s.history = s.history.filter(x => x.id !== h.id); });
       });
       li.append(day, what, del);
       list.appendChild(li);
     });
 
     const counts = {};
-    history.filter(h => daysAgo(h.date) < 7).forEach(h => {
+    state.history.filter(h => daysAgo(h.date) < 7).forEach(h => {
       const k = (h.emoji ? h.emoji + " " : "") + h.name;
       counts[k] = (counts[k] || 0) + 1;
     });
@@ -514,7 +802,21 @@
   }
 
   // ---------- menu editor ----------
-  function saveMeals() { save(KEYS.meals, meals); draw(); renderWeekly(); }
+  // Editor fields look meals up by id, so they keep working when a sync swaps in new objects.
+  let menuTimer = null;
+  function menuEdited(now) {
+    state.updatedAt = Date.now();
+    saveLocal();
+    draw();
+    renderWeekly();
+    clearTimeout(menuTimer);
+    const push = () => {
+      const snap = { meals: clone(state.meals), fruits: clone(state.fruits) };
+      change(s => { s.meals = clone(snap.meals); s.fruits = clone(snap.fruits); });
+    };
+    if (now) { menuTimer = null; push(); }
+    else menuTimer = setTimeout(() => { menuTimer = null; push(); }, 800);
+  }
 
   function field(labelText, input) {
     const wrap = document.createElement("div");
@@ -541,13 +843,22 @@
     return l;
   }
 
-  function renderMenuEditor(openIndex) {
+  function renderMenuEditor(openId) {
     const root = document.getElementById("meal-editor");
+    if (openId === undefined) {
+      const open = root.querySelector("details[open]");
+      openId = open ? open.dataset.id : null;
+    }
     root.innerHTML = "";
-    meals.forEach((m, i) => {
+    state.meals.forEach((m0, i) => {
+      const id = m0.id;
+      const get = () => state.meals.find(x => x.id === id) || m0;
+      const edit = (fn, now) => { fn(get()); updateSummary(); menuEdited(now); };
+
       const d = document.createElement("details");
       d.className = "meal";
-      if (i === openIndex) d.open = true;
+      d.dataset.id = id;
+      if (id === openId) d.open = true;
 
       const s = document.createElement("summary");
       const sw = document.createElement("span");
@@ -555,11 +866,12 @@
       const title = document.createElement("span");
       const flags = document.createElement("span");
       flags.className = "flags";
-      const updateSummary = () => {
+      function updateSummary() {
+        const m = get();
         sw.style.background = m.color;
         title.textContent = (m.emoji ? m.emoji + " " : "") + (m.name || "(no name)");
         flags.textContent = [m.weekly ? "once a week" : "", m.heavy ? "heavy" : ""].filter(Boolean).join(" · ");
-      };
+      }
       updateSummary();
       s.append(sw, title, flags);
       d.appendChild(s);
@@ -569,33 +881,32 @@
 
       const row = document.createElement("div");
       row.className = "row";
-      const nameF = field("Name", textInput(m.name, v => { m.name = v; updateSummary(); saveMeals(); }));
-      const emojiF = field("Emoji", textInput(m.emoji, v => { m.emoji = v.trim(); updateSummary(); saveMeals(); }));
+      const nameF = field("Name", textInput(m0.name, v => edit(m => { m.name = v; })));
+      const emojiF = field("Picture", textInput(m0.emoji, v => edit(m => { m.emoji = v.trim(); })));
       emojiF.className = "emoji";
       emojiF.style.flex = "0 0 70px";
       const color = document.createElement("input");
       color.type = "color";
-      color.value = m.color;
-      color.addEventListener("input", () => { m.color = color.value; updateSummary(); saveMeals(); });
+      color.value = m0.color;
+      color.addEventListener("input", () => edit(m => { m.color = color.value; }));
       const colorF = field("Color", color);
       colorF.style.flex = "0 0 56px";
       row.append(nameF, emojiF, colorF);
       body.appendChild(row);
 
-      body.appendChild(checkbox("Only once a week (like going out)", m.weekly, v => { m.weekly = v; updateSummary(); saveMeals(); }));
-      body.appendChild(checkbox("Heavier meal (shows “balance it out”)", m.heavy, v => { m.heavy = v; updateSummary(); saveMeals(); }));
+      body.appendChild(checkbox("Only once a week (like going out)", m0.weekly, v => edit(m => { m.weekly = v; }, true)));
+      body.appendChild(checkbox("Heavier meal (shows “balance it out”)", m0.heavy, v => edit(m => { m.heavy = v; }, true)));
 
       const plate = document.createElement("textarea");
-      plate.value = (m.plate || []).join("\n");
-      plate.addEventListener("input", () => {
+      plate.value = (m0.plate || []).join("\n");
+      plate.addEventListener("input", () => edit(m => {
         m.plate = plate.value.split("\n").map(x => x.trim()).filter(Boolean);
-        saveMeals();
-      });
+      }));
       body.appendChild(field("What goes on the plate (one per line — a fruit is added automatically)", plate));
 
       const tip = document.createElement("textarea");
-      tip.value = m.tip || "";
-      tip.addEventListener("input", () => { m.tip = tip.value.trim(); saveMeals(); });
+      tip.value = m0.tip || "";
+      tip.addEventListener("input", () => edit(m => { m.tip = tip.value.trim(); }));
       body.appendChild(field("Tip", tip));
 
       const actions = document.createElement("div");
@@ -606,17 +917,20 @@
       up.textContent = "↑ Move up";
       up.disabled = i === 0;
       up.addEventListener("click", () => {
-        [meals[i - 1], meals[i]] = [meals[i], meals[i - 1]];
-        saveMeals(); renderMenuEditor(i - 1);
+        const j = state.meals.findIndex(x => x.id === id);
+        if (j > 0) [state.meals[j - 1], state.meals[j]] = [state.meals[j], state.meals[j - 1]];
+        menuEdited(true);
+        renderMenuEditor(id);
       });
       const del = document.createElement("button");
       del.className = "secondary small danger";
       del.textContent = "🗑 Remove";
       del.addEventListener("click", () => {
-        if (meals.length <= 2) { alert("Keep at least 2 breakfasts on the wheel."); return; }
-        if (!confirm("Remove " + (m.name || "this breakfast") + " from the wheel?")) return;
-        meals.splice(i, 1);
-        saveMeals(); renderMenuEditor();
+        if (state.meals.length <= 2) { alert("Keep at least 2 breakfasts on the wheel."); return; }
+        if (!confirm("Remove " + (get().name || "this breakfast") + " from the wheel?")) return;
+        state.meals = state.meals.filter(x => x.id !== id);
+        menuEdited(true);
+        renderMenuEditor(null);
       });
       actions.append(up, del);
       body.appendChild(actions);
@@ -625,41 +939,223 @@
       root.appendChild(d);
     });
 
-    document.getElementById("fruit-editor").value = fruits.join("\n");
+    document.getElementById("fruit-editor").value = state.fruits.join("\n");
   }
 
   document.getElementById("add-meal").addEventListener("click", () => {
-    meals.push({
-      id: "meal-" + Date.now().toString(36),
-      name: "New breakfast", emoji: "🍽️", color: PALETTE[meals.length % PALETTE.length],
+    const id = newId();
+    state.meals.push({
+      id, name: "New breakfast", emoji: "🍽️", color: PALETTE[state.meals.length % PALETTE.length],
       heavy: false, weekly: false, plate: ["Something with protein", "Glass of milk"], tip: ""
     });
-    saveMeals();
-    renderMenuEditor(meals.length - 1);
-    const inputs = document.querySelectorAll("#meal-editor details[open] input[type=text]");
-    if (inputs[0]) { inputs[0].focus(); inputs[0].select(); }
+    menuEdited(true);
+    renderMenuEditor(id);
+    const input = document.querySelector("#meal-editor details[open] input[type=text]");
+    if (input) { input.focus(); input.select(); }
   });
 
   document.getElementById("fruit-editor").addEventListener("input", e => {
-    fruits = e.target.value.split("\n").map(x => x.trim()).filter(Boolean);
-    save(KEYS.fruits, fruits);
+    state.fruits = e.target.value.split("\n").map(x => x.trim()).filter(Boolean);
+    menuEdited();
   });
 
   document.getElementById("reset-menu").addEventListener("click", () => {
     if (!confirm("Put the breakfasts and fruits back to the original list? Your history is kept.")) return;
-    meals = clone(DEFAULT_MEALS);
-    fruits = DEFAULT_FRUITS.slice();
-    save(KEYS.meals, meals);
-    save(KEYS.fruits, fruits);
-    renderMenuEditor();
-    refresh();
+    change(s => { s.meals = clone(DEFAULT_MEALS); s.fruits = DEFAULT_FRUITS.slice(); });
+    renderMenuEditor(null);
   });
 
   document.getElementById("clear-history").addEventListener("click", () => {
     if (!confirm("Clear all breakfast history? This also unlocks the once-a-week treats.")) return;
-    history = [];
-    save(KEYS.history, history);
+    change(s => { s.history = []; });
+  });
+
+  // ---------- sync (Supabase) ----------
+  // The database holds one row per family code. Only two functions are exposed
+  // (get_breakfast / put_breakfast), so nothing can be read without the code.
+  let pendingRemote = null;
+  const sync = {
+    cfg: load(KEYS.sync, null), // { url, key, code }
+    status: "local",
+    lastSynced: null,
+    dirty: false,
+    queue: Promise.resolve(),
+
+    async rpc(fn, body) {
+      const headers = { "Content-Type": "application/json", apikey: this.cfg.key };
+      if (this.cfg.key.startsWith("eyJ")) headers.Authorization = "Bearer " + this.cfg.key;
+      const res = await fetch(this.cfg.url.replace(/\/+$/, "") + "/rest/v1/rpc/" + fn, {
+        method: "POST", headers, body: JSON.stringify(body)
+      });
+      const text = await res.text();
+      if (!res.ok) throw new Error(fn + " failed (" + res.status + "): " + text.slice(0, 200));
+      return text ? JSON.parse(text) : null;
+    },
+    get() { return this.rpc("get_breakfast", { p_code: this.cfg.code }); },
+    put(data) { return this.rpc("put_breakfast", { p_code: this.cfg.code, p_data: data }); },
+
+    setStatus(s) { this.status = s; if (s === "ok") this.lastSynced = new Date(); renderSync(); },
+
+    // Run sync jobs one at a time.
+    enqueue(job) {
+      this.queue = this.queue.then(() => job()).catch(e => console.warn(e));
+      return this.queue;
+    },
+
+    // Re-apply a change on top of the newest server copy and save it back.
+    push(op) { return this.enqueue(() => this.pushNow(op)); },
+    async pushNow(op) {
+        if (!this.cfg) return;
+        this.setStatus("syncing");
+        try {
+          const remote = await this.get();
+          // Offline edits since the last good sync win as a whole; otherwise merge this change in.
+          const next = remote && !this.dirty ? normalize(remote) : clone(state);
+          op(next);
+          next.updatedAt = Date.now();
+          await this.put(next);
+          this.dirty = false;
+          applyRemote(next);
+          this.setStatus("ok");
+        } catch (e) {
+          console.warn(e);
+          this.dirty = true;
+          this.setStatus("error");
+        }
+    },
+
+    // Fetch the latest copy from the server.
+    pull() { return this.enqueue(() => this.pullNow()); },
+    async pullNow() {
+        if (!this.cfg) return;
+        if (this.dirty) return this.pushNow(() => {});
+        if (menuTimer) return; // a menu edit is about to be pushed; pull after that
+        try {
+          const remote = await this.get();
+          if (!remote) {
+            await this.put(clone(state)); // first device: seed the database
+          } else if (remote.updatedAt !== state.updatedAt) {
+            applyRemote(normalize(remote));
+          }
+          this.setStatus("ok");
+        } catch (e) {
+          console.warn(e);
+          this.setStatus("error");
+        }
+    },
+
+    // First connection on this device: keep the server's menu, add any local-only history.
+    async connect(cfg) {
+      this.cfg = cfg;
+      this.setStatus("syncing");
+      const remote = await this.get(); // throws on bad URL/key/setup
+      save(KEYS.sync, cfg);
+      if (!remote) {
+        await this.put(clone(state));
+      } else {
+        const merged = normalize(remote);
+        const ids = new Set(merged.history.map(h => h.id));
+        state.history.forEach(h => { if (!ids.has(h.id)) merged.history.push(h); });
+        merged.updatedAt = Date.now();
+        await this.put(merged);
+        applyRemote(merged);
+      }
+      this.setStatus("ok");
+    },
+
+    disconnect() {
+      this.cfg = null;
+      this.dirty = false;
+      save(KEYS.sync, null);
+      this.setStatus("local");
+    }
+  };
+
+  function applyRemote(remote) {
+    if (spinning) { pendingRemote = remote; return; }
+    state.meals = remote.meals;
+    state.fruits = remote.fruits;
+    state.history = remote.history;
+    state.updatedAt = remote.updatedAt;
+    saveLocal();
     refresh();
+    // Don't yank the editor out from under someone who is typing in it.
+    if (!document.getElementById("tab-menu").contains(document.activeElement)) renderMenuEditor();
+  }
+
+  function renderSync() {
+    const pill = document.getElementById("sync-pill");
+    const labels = {
+      local: "📱 This device only",
+      syncing: "☁️ Syncing…",
+      ok: "☁️ Synced",
+      error: "⚠️ Offline"
+    };
+    pill.textContent = labels[sync.status];
+    pill.className = "pill" + (sync.status === "ok" ? " ok" : sync.status === "error" ? " error" : "");
+    const on = !!sync.cfg;
+    document.getElementById("sync-off").classList.toggle("hidden", on);
+    document.getElementById("sync-on").classList.toggle("hidden", !on);
+    document.getElementById("sync-last").textContent = sync.status === "error"
+      ? "— can't reach the server right now, changes will sync when it's back."
+      : sync.lastSynced ? "— last synced " + sync.lastSynced.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
+  }
+
+  function randomCode() {
+    const alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return "family-" + Array.from(bytes, b => alphabet[b % alphabet.length]).join("");
+  }
+
+  document.getElementById("sync-gen").addEventListener("click", () => {
+    document.getElementById("sync-code").value = randomCode();
+  });
+
+  async function connectWith(cfg) {
+    const err = document.getElementById("sync-error");
+    err.classList.add("hidden");
+    try {
+      await sync.connect(cfg);
+    } catch (e) {
+      console.warn(e);
+      sync.cfg = null;
+      sync.setStatus("local");
+      err.textContent = "Couldn't connect: " + e.message + ". Double-check the URL and key, and that you ran the setup SQL.";
+      err.classList.remove("hidden");
+    }
+  }
+
+  document.getElementById("sync-connect").addEventListener("click", () => {
+    const url = document.getElementById("sync-url").value.trim();
+    const key = document.getElementById("sync-key").value.trim();
+    const code = document.getElementById("sync-code").value.trim();
+    const err = document.getElementById("sync-error");
+    if (!/^https:\/\/.+/.test(url) || !key || code.length < 12) {
+      err.textContent = "Fill in the Project URL (https://…), the key, and a family code of at least 12 characters (tap “Make one”).";
+      err.classList.remove("hidden");
+      return;
+    }
+    connectWith({ url, key, code });
+  });
+
+  document.getElementById("sync-copy").addEventListener("click", async () => {
+    const link = location.origin + location.pathname + "#sync=" + encodeURIComponent(btoa(JSON.stringify(sync.cfg)));
+    try {
+      await navigator.clipboard.writeText(link);
+      alert("Setup link copied! Text it to the other phone and open it there.");
+    } catch (e) {
+      prompt("Copy this link and open it on the other device:", link);
+    }
+  });
+  document.getElementById("sync-now").addEventListener("click", () => sync.pull());
+  document.getElementById("sync-disconnect").addEventListener("click", () => {
+    if (!confirm("Stop syncing on this device? It keeps a copy of everything so far.")) return;
+    sync.disconnect();
+  });
+  document.getElementById("sync-pill").addEventListener("click", () => {
+    document.querySelector('.tabs button[data-tab="menu"]').click();
+    document.getElementById("sync-card").scrollIntoView({ behavior: "smooth" });
   });
 
   // ---------- tabs ----------
@@ -670,16 +1166,40 @@
         document.getElementById("tab-" + t).classList.toggle("hidden", t !== btn.dataset.tab));
       if (btn.dataset.tab === "history") renderHistory();
       if (btn.dataset.tab === "spin") draw();
+      if (sync.cfg) sync.pull();
     });
   });
 
   function refresh() { draw(); renderWeekly(); renderHistory(); }
 
   document.getElementById("spin").addEventListener("click", spin);
+  document.getElementById("wheel-wrap").addEventListener("click", spin);
   document.getElementById("lock").addEventListener("click", lockIn);
 
-  renderMenuEditor();
+  renderSound();
+  renderMenuEditor(null);
   refresh();
+  renderSync();
+
+  // A setup link from another device looks like ...#sync=<base64 json>
+  function handleSetupLink() {
+    const m = location.hash.match(/sync=([^&]+)/);
+    if (!m) return false;
+    history.replaceState(null, "", location.pathname + location.search);
+    try {
+      const cfg = JSON.parse(atob(decodeURIComponent(m[1])));
+      if (cfg && cfg.url && cfg.key && cfg.code) connectWith(cfg);
+    } catch (e) { console.warn("Bad setup link", e); }
+    return true;
+  }
+  window.addEventListener("hashchange", handleSetupLink);
+  if (!handleSetupLink() && sync.cfg) sync.pull();
+
+  // Keep devices in step: check for changes every 15s while the page is open, and when it comes back.
+  setInterval(() => { if (sync.cfg && document.visibilityState === "visible") sync.pull(); }, 15000);
+  document.addEventListener("visibilitychange", () => {
+    if (sync.cfg && document.visibilityState === "visible") sync.pull();
+  });
 </script>
 </body>
 </html>
