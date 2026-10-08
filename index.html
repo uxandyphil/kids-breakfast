@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breakfast Wheel</title>
+<style>
+  :root {
+    --bg: #fff8ec;
+    --card: #ffffff;
+    --ink: #2b2118;
+    --muted: #7a6a5a;
+    --accent: #e8572a;
+    --accent-ink: #ffffff;
+    --border: #f0dcc2;
+    --locked: #d8d2ca;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1d1814;
+      --card: #2a231d;
+      --ink: #f6ece0;
+      --muted: #b9a893;
+      --accent: #ff7a45;
+      --accent-ink: #1d1814;
+      --border: #43372c;
+      --locked: #4a433c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Trebuchet MS", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    min-height: 100vh;
+  }
+  h1 { margin: 8px 0 4px; font-size: 2rem; text-align: center; }
+  .sub { margin: 0 0 16px; color: var(--muted); text-align: center; }
+  .wheel-wrap { position: relative; width: min(90vw, 420px); aspect-ratio: 1; }
+  canvas { width: 100%; height: 100%; display: block; }
+  .pointer {
+    position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 18px solid transparent; border-right: 18px solid transparent;
+    border-top: 32px solid var(--accent);
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,.3));
+    z-index: 2;
+  }
+  button {
+    font: inherit; font-weight: bold; cursor: pointer; border: none;
+    border-radius: 999px; padding: 14px 36px; font-size: 1.3rem;
+    background: var(--accent); color: var(--accent-ink);
+    box-shadow: 0 4px 0 rgba(0,0,0,.2);
+  }
+  button:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,.2); }
+  button:disabled { opacity: .5; cursor: default; }
+  button.secondary {
+    background: transparent; color: var(--ink); border: 2px solid var(--border);
+    box-shadow: none; font-size: 1rem; padding: 10px 20px;
+  }
+  .controls { margin: 20px 0; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .card {
+    background: var(--card); border: 2px solid var(--border); border-radius: 16px;
+    padding: 16px 20px; width: min(100%, 460px); margin-bottom: 16px;
+  }
+  .card h2 { margin: 0 0 8px; font-size: 1.5rem; }
+  .card ul { margin: 8px 0 0; padding-left: 20px; }
+  .card li { margin: 4px 0; }
+  .tag {
+    display: inline-block; font-size: .8rem; font-weight: bold; padding: 2px 10px;
+    border-radius: 999px; background: var(--accent); color: var(--accent-ink); margin-left: 6px;
+    vertical-align: middle;
+  }
+  .note { color: var(--muted); font-size: .9rem; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+  <h1>🍳 Breakfast Wheel 🥞</h1>
+  <p class="sub">Spin it to pick today's breakfast!</p>
+
+  <div class="wheel-wrap">
+    <div class="pointer"></div>
+    <canvas id="wheel" width="840" height="840"></canvas>
+  </div>
+
+  <div class="controls">
+    <button id="spin">SPIN!</button>
+  </div>
+
+  <div id="result" class="card hidden" aria-live="polite">
+    <h2 id="meal-name"></h2>
+    <div id="meal-heavy"></div>
+    <ul id="meal-plate"></ul>
+    <p id="meal-tip" class="note"></p>
+    <div class="controls" style="margin-bottom:0">
+      <button id="lock" class="secondary">✅ We're having this!</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <strong>Go out to DK:</strong> <span id="dk-status"></span>
+    <p class="note" style="margin-bottom:0">DK can only be picked once a week (Monday–Sunday).
+      It counts once you tap “We're having this!”.</p>
+    <div class="controls" style="margin-bottom:0">
+      <button id="reset-dk" class="secondary">Reset DK for this week</button>
+    </div>
+  </div>
+
+<script>
+  // Every meal is built to be balanced: main + fruit + protein (and a veggie where it fits).
+  // "heavy" meals get extra tips to offset the sugar/carbs.
+  const MEALS = [
+    {
+      name: "Pancakes", emoji: "🥞", color: "#f6b94c", heavy: true,
+      plate: ["Pancakes (try whole-wheat or oat mix)", "Scrambled egg or turkey sausage for protein", "Glass of milk"],
+      tip: "Top with berries or sliced banana and a little peanut butter or Greek yogurt instead of piling on syrup. Serve syrup on the side in a small cup for dipping."
+    },
+    {
+      name: "French Toast", emoji: "🍞", color: "#e88b4a", heavy: true,
+      plate: ["French toast on whole-grain bread", "Extra egg in the batter = more protein", "Glass of milk"],
+      tip: "Add cinnamon and vanilla so it needs less syrup. Top with warm berries or applesauce, and a spoonful of Greek yogurt."
+    },
+    {
+      name: "Oatmeal / MUSH", emoji: "🥣", color: "#c9a26b", heavy: false,
+      plate: ["Oatmeal or MUSH overnight oats", "Stir in nut butter or chia seeds for protein", "Glass of milk"],
+      tip: "Plain oats + your own fruit beats the sugary flavored packets. Hard-boiled egg on the side keeps everyone full longer."
+    },
+    {
+      name: "Scrambled Eggs", emoji: "🍳", color: "#f4d35e", heavy: false,
+      plate: ["Scrambled eggs", "Whole-grain toast", "Sneak in spinach, peppers, or cheese"],
+      tip: "Already protein-packed! Just add a fruit and some whole grains."
+    },
+    {
+      name: "Bagels", emoji: "🥯", color: "#d8a47f", heavy: true,
+      plate: ["Bagel (whole-wheat if you've got it — or half a bagel)", "Cream cheese, peanut butter, or egg + cheese sandwich", "Cucumber or tomato slices"],
+      tip: "Bagels are mostly carbs, so add protein (egg, PB, or cheese) and pair with fruit."
+    },
+    {
+      name: "Cereal", emoji: "🥛", color: "#7fc8a9", heavy: false,
+      plate: ["Cereal (pick one with less sugar and more fiber)", "Milk", "Yogurt or a cheese stick for protein"],
+      tip: "Mix a sugary cereal half-and-half with a plain one, and slice fruit right on top."
+    },
+    {
+      name: "Go out to DK!", short: "Go out to DK", emoji: "🎉", color: "#e85d75", heavy: true, weekly: true,
+      plate: ["Pick one treat each", "Add an egg sandwich or something with protein if you can", "Milk or water instead of juice/soda"],
+      tip: "Treat day! Bring fruit from home for the car (clementines, apple slices, grapes) and keep lunch light and veggie-heavy."
+    }
+  ];
+
+  const FRUITS = [
+    "🍓 Strawberries", "🫐 Blueberries", "🍌 Banana", "🍎 Apple slices", "🍊 Clementine / orange",
+    "🍉 Watermelon", "🍈 Cantaloupe", "🥝 Kiwi", "🍇 Grapes (cut for little ones)", "🍐 Pear", "🍑 Peaches", "🥭 Mango"
+  ];
+
+  const DK_KEY = "breakfastWheel.dkLastDate";
+
+  // Monday-start week, local time, as a YYYY-MM-DD key.
+  function weekStart(d) {
+    const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const day = (x.getDay() + 6) % 7; // Mon=0 ... Sun=6
+    x.setDate(x.getDate() - day);
+    return x.toISOString().slice(0, 10);
+  }
+  function getDkDate() {
+    try { return localStorage.getItem(DK_KEY); } catch (e) { return null; }
+  }
+  function setDkDate(v) {
+    try { v ? localStorage.setItem(DK_KEY, v) : localStorage.removeItem(DK_KEY); } catch (e) {}
+  }
+  function dkUsedThisWeek() {
+    const last = getDkDate();
+    return !!last && weekStart(new Date(last + "T12:00:00")) === weekStart(new Date());
+  }
+  function isAvailable(meal) {
+    return !(meal.weekly && dkUsedThisWeek());
+  }
+
+  const canvas = document.getElementById("wheel");
+  const ctx = canvas.getContext("2d");
+  const N = MEALS.length;
+  const SLICE = (2 * Math.PI) / N;
+  let rotation = 0;        // radians
+  let spinning = false;
+  let current = null;
+
+  function draw() {
+    const W = canvas.width, R = W / 2 - 10;
+    ctx.clearRect(0, 0, W, W);
+    ctx.save();
+    ctx.translate(W / 2, W / 2);
+    ctx.rotate(rotation);
+    MEALS.forEach((m, i) => {
+      const start = i * SLICE - Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, R, start, start + SLICE);
+      ctx.closePath();
+      ctx.fillStyle = isAvailable(m) ? m.color : getComputedStyle(document.documentElement).getPropertyValue("--locked");
+      ctx.fill();
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = "#ffffff";
+      ctx.stroke();
+
+      ctx.save();
+      ctx.rotate(start + SLICE / 2);
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#2b2118";
+      ctx.font = "bold 30px 'Trebuchet MS', sans-serif";
+      const label = (m.short || m.name) + (isAvailable(m) ? "" : " 🔒");
+      ctx.fillText(label, R - 24, 0);
+      ctx.font = "48px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(m.emoji, R * 0.2, 0);
+      ctx.restore();
+    });
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.arc(W / 2, W / 2, 46, 0, 2 * Math.PI);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.font = "48px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🍴", W / 2, W / 2 + 2);
+  }
+
+  function spin() {
+    if (spinning) return;
+    const choices = MEALS.map((m, i) => i).filter(i => isAvailable(MEALS[i]));
+    const target = choices[Math.floor(Math.random() * choices.length)];
+    // Land somewhere inside the slice (not right on an edge) under the top pointer.
+    const offset = (0.15 + Math.random() * 0.7) * SLICE;
+    const sliceAngle = target * SLICE + offset;
+    const base = rotation - (rotation % (2 * Math.PI));
+    const end = base + 2 * Math.PI * (5 + Math.floor(Math.random() * 3)) + (2 * Math.PI - sliceAngle);
+    const startRot = rotation, duration = 4500, t0 = performance.now();
+
+    spinning = true;
+    document.getElementById("spin").disabled = true;
+    document.getElementById("result").classList.add("hidden");
+
+    function frame(now) {
+      const t = Math.min(1, (now - t0) / duration);
+      const ease = 1 - Math.pow(1 - t, 4);
+      rotation = startRot + (end - startRot) * ease;
+      draw();
+      if (t < 1) return requestAnimationFrame(frame);
+      spinning = false;
+      document.getElementById("spin").disabled = false;
+      showResult(MEALS[target]);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function showResult(meal) {
+    current = meal;
+    const fruit = FRUITS[Math.floor(Math.random() * FRUITS.length)];
+    document.getElementById("meal-name").textContent = meal.emoji + " " + meal.name;
+    document.getElementById("meal-heavy").innerHTML = meal.heavy
+      ? '<span class="note">Heavier meal</span><span class="tag">balance it out</span>' : "";
+    const plate = document.getElementById("meal-plate");
+    plate.innerHTML = "";
+    [...meal.plate, "Fruit: " + fruit].forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      plate.appendChild(li);
+    });
+    document.getElementById("meal-tip").textContent = "💡 " + meal.tip;
+    const lock = document.getElementById("lock");
+    lock.disabled = false;
+    lock.textContent = "✅ We're having this!";
+    document.getElementById("result").classList.remove("hidden");
+  }
+
+  function lockIn() {
+    if (!current) return;
+    if (current.weekly) {
+      const d = new Date();
+      setDkDate(d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"));
+      updateDkStatus();
+      draw();
+    }
+    const lock = document.getElementById("lock");
+    lock.disabled = true;
+    lock.textContent = "Enjoy! 😋";
+  }
+
+  function updateDkStatus() {
+    document.getElementById("dk-status").textContent = dkUsedThisWeek()
+      ? "already used this week 🔒 — back on the wheel next Monday."
+      : "available this week ✅";
+  }
+
+  document.getElementById("spin").addEventListener("click", spin);
+  document.getElementById("lock").addEventListener("click", lockIn);
+  document.getElementById("reset-dk").addEventListener("click", () => {
+    setDkDate(null); updateDkStatus(); draw();
+  });
+
+  updateDkStatus();
+  draw();
+</script>
+</body>
+</html>
