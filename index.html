@@ -119,6 +119,11 @@
   .note { color: var(--muted); font-size: .9rem; }
   .hidden { display: none !important; }
 
+  /* Kid screens: no text selection, callouts, or double-tap zoom getting in the way of a press */
+  #tab-home, #tab-spin, .overlay { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .tile, .pick, .tabs button, button.round, button.go, #spin, #wheel-wrap { touch-action: manipulation; }
+  .tile.pressing, .pick.pressing, button.pressing, #wheel-wrap.pressing { filter: brightness(.92); transform: scale(.97); }
+
   /* Kid home */
   .home-hello { font-size: clamp(1.4rem, 6.5vw, 2rem); margin: 0 0 14px; text-align: center; }
   .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: min(100%, 520px); margin-bottom: 20px; }
@@ -1720,6 +1725,61 @@
     document.querySelector('.tabs button[data-tab="menu"]').click();
     document.getElementById("sync-card").scrollIntoView({ behavior: "smooth" });
   });
+
+  // ---------- toddler-friendly presses ----------
+  // Little fingers wobble and hold. A touch counts as a tap if the finger moved less than SLOP pixels
+  // (even if the page started to scroll a bit), and holding still for HOLD ms counts as a tap right away.
+  // Only a real swipe scrolls. Desktop mouse clicks are untouched.
+  (function () {
+    const SEL = ".tile, .pick, #kid-done, #kid-close, #spin, #wheel-wrap, #spin-home, .tabs button, #sound";
+    const SLOP = 30, HOLD = 550;
+    let t = null; // { el, x, y, moved, timer, fired }
+
+    function cancel() {
+      if (!t) return;
+      clearTimeout(t.timer);
+      t.el.classList.remove("pressing");
+      t = null;
+    }
+
+    document.addEventListener("touchstart", e => {
+      cancel();
+      if (e.touches.length > 1) return;
+      const el = e.target.closest(SEL);
+      if (!el || el.disabled) return;
+      const p = e.touches[0];
+      t = { el, x: p.clientX, y: p.clientY, moved: 0, fired: false };
+      el.classList.add("pressing");
+      t.timer = setTimeout(() => {
+        if (!t || t.moved >= SLOP) return;
+        t.fired = true;
+        t.el.classList.remove("pressing");
+        t.el.click();
+      }, HOLD);
+    }, { passive: true });
+
+    document.addEventListener("touchmove", e => {
+      if (!t) return;
+      const p = e.touches[0];
+      t.moved = Math.max(t.moved, Math.hypot(p.clientX - t.x, p.clientY - t.y));
+      if (t.moved >= SLOP) cancel(); // a real swipe: let it scroll
+    }, { passive: true });
+
+    document.addEventListener("touchend", e => {
+      if (!t) return;
+      const cur = t;
+      t = null;
+      clearTimeout(cur.timer);
+      cur.el.classList.remove("pressing");
+      // We handle this press ourselves, so stop the browser's own click (which a wobble may have swallowed).
+      if (e.cancelable) e.preventDefault();
+      if (!cur.fired) cur.el.click();
+    }, { passive: false });
+
+    document.addEventListener("touchcancel", cancel);
+    // Long-press menus on Android
+    document.addEventListener("contextmenu", e => { if (e.target.closest(SEL)) e.preventDefault(); });
+  })();
 
   // ---------- tabs ----------
   function showView(name) {
