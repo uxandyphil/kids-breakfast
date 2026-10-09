@@ -16,7 +16,9 @@ so the Home screen becomes "today at a glance". Picks reset each new day and are
 - **😊 Feelings** — 12 feelings: Happy, Excited, Silly, Loved, Proud, Calm, Sleepy, Hungry, Shy, Sad, Mad, Scared
 - **🎨 Colors** — 12 colors including Rainbow
 - **🛴 Walk** — what to take on the morning walk: Scooter, Bike, Wagon, Stroller
-- **🐶 Animal** — favorite animal today (40 animals)
+- **🐶 Animal** — favorite animal today (40 animals). Each one makes its noise when tapped ("Dog! Woof woof!"),
+  in a deep voice for big animals and a squeaky one for small ones, with sound effects like a roar, buzz,
+  hiss, bubbles, or an elephant trumpet
 - **👾 Monster** — favorite monster today: Ghost, Space Monster, Dragon, Alien, Troll, Vampire, Zombie, Sea Monster, Robot Monster
 - **🎃 Halloween** — how many days until Halloween, with one pumpkin per day to count
 
