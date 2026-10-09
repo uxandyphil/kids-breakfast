@@ -24,6 +24,9 @@ Every question is multi-select with big cards that bounce and are read aloud. **
 one picture is chosen (otherwise the cards wiggle and it says "Tap a picture first!"). The 🏠 button goes back
 home without saving. The page behind a dialog can't be scrolled. Tap 🔊 in the top corner to mute.
 
+Taps are toddler-proof: a wobbly finger still counts as a tap, and holding a picture for about half a second
+counts too. Only a real swipe scrolls.
+
 Below the tiles, grown-ups get **Today's plate**: the balanced meal with the fruit your little one picked
 (or a suggestion), plus tips. Heavier meals get a "balance it out" tag. Breakfasts marked **once a week**
 (like Go out to DK) are greyed out with a 🔒 once they've been today's breakfast that week (Monday–Sunday).
