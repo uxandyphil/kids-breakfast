@@ -6,24 +6,31 @@ Fun breakfast tools for the family.
 
 Live at https://uxandyphil.github.io/kids-breakfast/ (or open `index.html` in any browser).
 
-### Spin tab (made for little ones)
-- Big pictures on every slice, flashing lights, a clicking pointer, and a giant **🎡 SPIN!** button —
-  or just tap the wheel.
-- When it stops: confetti, a fanfare, the breakfast's picture bouncing on screen, and the name read out loud.
-  Tap 🔊 in the top corner to mute.
-- Then it's your little one's turn, with big picture cards (tap as many as they like — each one is read aloud):
-  1. **What fruit do you want?** — Blueberries, Blackberries, Bananas, Raspberries (edit the list in the Menu tab)
-  2. **What are your favorite colors?** — 12 colors including Rainbow
-  3. **How are you feeling?** — 12 feelings: Happy, Excited, Silly, Loved, Proud, Calm, Sleepy, Hungry, Shy, Sad, Mad, Scared
-  4. **Yummy! Let's eat!** — shows everything they picked. ("Skip" in the corner jumps straight to the plate.)
-- The plate card below shows the balanced meal with their fruit pick (or a random fruit if skipped), their
-  colors and feelings, plus tips. Heavier meals get a "balance it out" tag.
-- Tap **"We're having this!"** to log it. Breakfasts marked **once a week** (like Go out to DK) are
-  greyed out with a 🔒 once they've been logged that week (Monday–Sunday).
+### Home (made for little ones)
+Big picture tiles your toddler can tap in any order. Whatever they pick shows right on the tile (with a ✓),
+so the Home screen becomes "today at a glance". Picks reset each new day and are kept in History.
+
+- **🎡 Spin for breakfast** — opens the wheel: big pictures, flashing lights, a clicking pointer, then confetti,
+  a fanfare, and the breakfast read out loud. The last spin of the day is today's breakfast.
+- **🍓 Fruit** — Blueberries, Blackberries, Bananas, Raspberries (edit the list in the Menu tab)
+- **😊 Feelings** — 12 feelings: Happy, Excited, Silly, Loved, Proud, Calm, Sleepy, Hungry, Shy, Sad, Mad, Scared
+- **🎨 Colors** — 12 colors including Rainbow
+- **🛴 Walk** — what to take on the morning walk: Scooter, Bike, Wagon, Stroller
+- **🐶 Animal** — favorite animal today (40 animals)
+- **👾 Monster** — favorite monster today: Ghost, Space Monster, Dragon, Alien, Troll, Vampire, Zombie, Sea Monster, Robot Monster
+- **🎃 Halloween** — how many days until Halloween, with one pumpkin per day to count
+
+Every question is multi-select with big cards that bounce and are read aloud. **Done** only works once at least
+one picture is chosen (otherwise the cards wiggle and it says "Tap a picture first!"). The 🏠 button goes back
+home without saving. The page behind a dialog can't be scrolled. Tap 🔊 in the top corner to mute.
+
+Below the tiles, grown-ups get **Today's plate**: the balanced meal with the fruit your little one picked
+(or a suggestion), plus tips. Heavier meals get a "balance it out" tag. Breakfasts marked **once a week**
+(like Go out to DK) are greyed out with a 🔒 once they've been today's breakfast that week (Monday–Sunday).
 
 ### History tab
-- What you've had recently (with the fruit, colors, and feelings picked) plus a count for the last 7 days
-  and a "How we felt" summary. Tap ✕ to remove a mistake
+- One row per day: the breakfast plus everything picked on the Home tiles, a breakfast count for the last
+  7 days, and a "How we felt" summary. Tap ✕ to remove a mistake
   (removing this week's DK entry unlocks DK again).
 
 ### Menu tab

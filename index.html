@@ -119,28 +119,55 @@
   .note { color: var(--muted); font-size: .9rem; }
   .hidden { display: none !important; }
 
-  /* Celebration + little one's turn */
+  /* Kid home */
+  .home-hello { font-size: clamp(1.4rem, 6.5vw, 2rem); margin: 0 0 14px; text-align: center; }
+  .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: min(100%, 520px); margin-bottom: 20px; }
+  .tile {
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-height: 150px; padding: 12px 8px; border-radius: 26px; border: 4px solid rgba(0,0,0,.06);
+    background: var(--tile, #fff3d6); color: #2b2118; font-size: 1.15rem; box-shadow: 0 6px 0 rgba(0,0,0,.14);
+  }
+  .tile:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,.14); }
+  .tile .tile-icon { font-size: 64px; line-height: 1; }
+  .tile .tile-label { font-weight: bold; line-height: 1.15; }
+  .tile .tile-picks { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; min-height: 64px; }
+  .mini { width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; font-size: 36px; line-height: 1; flex: none; }
+  .mini svg { height: 100%; width: auto; }
+  .mini.dot { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(0,0,0,.18); }
+  .tile .more { font-size: 1rem; font-weight: bold; }
+  .tile.done::after {
+    content: "✓"; position: absolute; top: -10px; right: -10px; width: 38px; height: 38px; border-radius: 50%;
+    background: var(--ok); color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; box-shadow: 0 2px 4px rgba(0,0,0,.25);
+  }
+  .tile.wide { grid-column: span 2; min-height: 110px; flex-direction: row; gap: 14px; }
+  .tile.wide .tile-label { font-size: 1.4rem; }
+  .subhead { width: min(100%, 460px); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  button.round {
+    width: 56px; height: 56px; padding: 0; border-radius: 50%; font-size: 1.7rem; flex: none;
+    background: var(--card); color: var(--ink); border: 3px solid var(--border); box-shadow: 0 3px 0 rgba(0,0,0,.12);
+  }
+
+  /* Full-screen kid dialogs (spin result, pickers, Halloween) */
   .overlay {
     position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
-    align-items: center; text-align: center; padding: 16px; overflow-y: auto;
-    background: rgba(255, 248, 236, .96);
+    align-items: center; text-align: center; padding: 16px 16px 0; overflow-y: auto;
+    overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    background: var(--bg);
   }
-  @media (prefers-color-scheme: dark) { .overlay { background: rgba(29, 24, 20, .96); } }
-  .kid-inner { margin: auto; width: min(100%, 520px); display: flex; flex-direction: column; align-items: center; }
-  .kid-top { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-  .dots { display: flex; gap: 8px; }
-  .dots span { width: 12px; height: 12px; border-radius: 50%; background: var(--border); transition: all .2s; }
-  .dots span.on { background: var(--accent); width: 28px; border-radius: 6px; }
-  .dots span.done { background: var(--accent); opacity: .45; }
+  .kid-inner { margin: auto 0; padding-top: 64px; width: min(100%, 520px); display: flex; flex-direction: column; align-items: center; }
+  .kid-top { position: sticky; top: 0; z-index: 2; align-self: stretch; display: flex; justify-content: flex-start; height: 0; overflow: visible; }
   .overlay .big-emoji { font-size: min(48vw, 220px); line-height: 1.1; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both, float 1.4s ease-in-out .7s infinite; }
   .overlay .big-name { font-size: clamp(2rem, 10vw, 3.2rem); font-weight: bold; margin-top: 8px; animation: pop .5s .25s both; }
   .overlay .yay { font-size: 1.6rem; margin-top: 6px; animation: pop .5s .45s both; }
-  .kid-title { font-size: clamp(1.6rem, 7.5vw, 2.4rem); margin: 4px 0 2px; animation: pop .4s both; }
+  .kid-title { font-size: clamp(1.5rem, 7vw, 2.3rem); margin: 4px 0 2px; animation: pop .4s both; }
   .kid-sub { color: var(--muted); margin: 0 0 6px; }
-  .pick-grid { display: grid; gap: 14px; width: 100%; margin: 10px 0 18px; grid-template-columns: repeat(2, 1fr); }
+  .pick-grid { display: grid; gap: 14px; width: 100%; margin: 10px 0 8px; grid-template-columns: repeat(2, 1fr); }
   .pick-grid.cols-3 { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .pick-grid.shake { animation: shake .45s; }
+  @keyframes shake { 0%, 100% { transform: translateX(0) } 20%, 60% { transform: translateX(-10px) } 40%, 80% { transform: translateX(10px) } }
   .pick {
-    position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0;
     background: var(--card); color: var(--ink); border: 4px solid var(--border); border-radius: 24px;
     padding: 10px 6px 12px; font-size: 1.15rem; box-shadow: 0 5px 0 rgba(0,0,0,.12);
     transition: transform .15s, border-color .15s, box-shadow .15s;
@@ -153,28 +180,35 @@
   .pick.boing { animation: boing .35s ease-out; }
   @keyframes boing { 0% { transform: scale(1) } 45% { transform: scale(1.16) } 100% { transform: scale(1.04) } }
   .pick .art { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; }
-  .pick-grid.cols-3 .pick .art { height: 72px; }
+  .pick-grid.cols-3 .pick .art { height: 76px; }
   .pick .art-emoji { font-size: 92px; line-height: 1; }
-  .pick-grid.cols-3 .pick .art-emoji { font-size: 54px; }
-  .pick .art svg { height: 100%; width: auto; }
-  .pick .swatch { height: 86%; aspect-ratio: 1; border-radius: 50%; border: 3px solid rgba(0,0,0,.18); }
+  .pick-grid.cols-3 .pick .art-emoji { font-size: 56px; }
+  .pick .art svg { height: 100%; width: auto; max-width: 100%; }
+  /* Fixed width AND height so the circle can't get squashed into a thin line on narrow screens */
+  .pick .swatch {
+    flex: none; display: block; width: 100px; height: 100px; border-radius: 50%; border: 3px solid rgba(0,0,0,.18);
+  }
+  .pick-grid.cols-3 .pick .swatch { width: 64px; height: 64px; }
   .pick .check {
     position: absolute; top: -12px; right: -12px; width: 40px; height: 40px; border-radius: 50%;
     background: var(--accent); color: #fff; font-size: 1.4rem; display: none;
     align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,.25);
   }
   .pick[aria-pressed="true"] .check { display: flex; animation: pop .25s both; }
+  .kid-actions {
+    position: sticky; bottom: 0; width: calc(100% + 32px); margin: 8px -16px 0; padding: 14px 16px 22px;
+    display: flex; justify-content: center; background: linear-gradient(to top, var(--bg) 75%, transparent);
+  }
   button.go {
     font-size: 1.7rem; padding: 16px 52px;
     background: linear-gradient(180deg, #ff8a3d, #e8452a); color: #fff;
     box-shadow: 0 6px 0 #a8321d, 0 10px 20px rgba(232,69,42,.3);
   }
-  button.link { background: none; box-shadow: none; color: var(--muted); font-size: 1rem; padding: 6px 10px; font-weight: normal; text-decoration: underline; }
-  .summary { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 8px 0; align-items: center; min-height: 10px; }
-  .summary .chip-art { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; font-size: 52px; animation: pop .4s both; }
-  .summary .chip-art svg { height: 100%; }
+  button.go.waiting { filter: grayscale(.9); opacity: .5; box-shadow: 0 6px 0 rgba(0,0,0,.2); }
+  .count-num { font-size: clamp(5rem, 32vw, 10rem); font-weight: bold; line-height: 1; color: #f57c00; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both; }
+  .pumpkins { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; font-size: 32px; max-width: 380px; margin: 10px auto; }
+  .pumpkins span { animation: pop .3s both; }
   .dot { display: inline-block; width: 1em; height: 1em; border-radius: 50%; border: 2px solid rgba(0,0,0,.15); vertical-align: -0.15em; }
-  .summary .dot { width: 44px; height: 44px; animation: pop .4s both; }
   @keyframes bounce-in { 0% { transform: scale(0) rotate(-30deg) } 100% { transform: scale(1) rotate(0) } }
   @keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
   @keyframes pop { 0% { opacity: 0; transform: scale(.6) } 100% { opacity: 1; transform: scale(1) } }
@@ -183,15 +217,14 @@
   /* History */
   .history { list-style: none; padding: 0 !important; margin: 0 !important; }
   .history li {
-    display: flex; align-items: center; gap: 12px; padding: 10px 0;
+    display: flex; align-items: flex-start; gap: 12px; padding: 10px 0;
     border-bottom: 1px solid var(--border); margin: 0 !important;
   }
   .history li:last-child { border-bottom: none; }
-  .history .day { min-width: 84px; color: var(--muted); font-size: .9rem; }
-  .history .what { flex: 1; }
-  .history .fruit { display: block; color: var(--muted); font-size: .85rem; }
-  .kid-picks { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
-  .kid-picks p { margin: 4px 0; }
+  .history .day { min-width: 84px; color: var(--muted); font-size: .9rem; padding-top: 2px; }
+  .history .what { flex: 1; min-width: 0; }
+  .history .meal-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .history .fruit { display: block; color: var(--muted); font-size: .85rem; margin-top: 2px; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chips span { background: var(--bg); border: 2px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: .95rem; }
 
@@ -228,13 +261,38 @@
   </header>
 
   <div class="tabs" role="tablist">
-    <button role="tab" data-tab="spin" aria-selected="true">🎡 Spin</button>
+    <button role="tab" data-tab="home" aria-selected="true">🏠 Home</button>
     <button role="tab" data-tab="history" aria-selected="false">📅 History</button>
     <button role="tab" data-tab="menu" aria-selected="false">✏️ Menu</button>
   </div>
 
-  <!-- SPIN -->
-  <section id="tab-spin" class="panel">
+  <!-- HOME: big tiles the little one can tap in any order -->
+  <section id="tab-home" class="panel">
+    <h2 class="home-hello" id="home-hello">Good morning! ☀️</h2>
+    <div class="tiles" id="tiles"></div>
+
+    <div id="result" class="card hidden">
+      <p class="note" style="margin:0 0 4px">Today's plate (for grown-ups)</p>
+      <h2 id="meal-name"></h2>
+      <div id="meal-heavy"></div>
+      <ul id="meal-plate"></ul>
+      <p id="meal-tip" class="note"></p>
+    </div>
+
+    <div id="weekly-card" class="card">
+      <h3>Once-a-week treats</h3>
+      <ul id="weekly-status"></ul>
+      <p class="note" style="margin-bottom:0">These can only be picked once a week (Monday–Sunday).
+        It counts when it's today's breakfast — the last spin of the day wins. Delete it from History to undo.</p>
+    </div>
+  </section>
+
+  <!-- SPIN (opened from the Breakfast tile) -->
+  <section id="tab-spin" class="panel hidden">
+    <div class="subhead">
+      <button id="spin-home" class="round" type="button" aria-label="Back home">🏠</button>
+      <strong style="font-size:1.3rem">Spin for breakfast!</strong>
+    </div>
     <div class="wheel-wrap" id="wheel-wrap" role="button" aria-label="Spin the wheel">
       <svg class="pointer" id="pointer" viewBox="0 0 56 64" aria-hidden="true">
         <path d="M28 62 L6 14 A24 24 0 1 1 50 14 Z" fill="#e8452a" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
@@ -243,27 +301,8 @@
       <canvas id="wheel" width="900" height="900"></canvas>
     </div>
     <p class="tap-hint">Tap the wheel or the button!</p>
-
     <div class="controls">
       <button id="spin">🎡 SPIN!</button>
-    </div>
-
-    <div id="result" class="card hidden" aria-live="polite">
-      <h2 id="meal-name"></h2>
-      <div id="meal-heavy"></div>
-      <ul id="meal-plate"></ul>
-      <div id="kid-picks" class="kid-picks hidden"></div>
-      <p id="meal-tip" class="note"></p>
-      <div class="controls" style="margin-bottom:0">
-        <button id="lock" class="secondary">✅ We're having this!</button>
-      </div>
-    </div>
-
-    <div id="weekly-card" class="card">
-      <h3>Once-a-week treats</h3>
-      <ul id="weekly-status"></ul>
-      <p class="note" style="margin-bottom:0">These can only be picked once a week (Monday–Sunday).
-        A pick counts once you tap “We're having this!”. Delete it from History to undo.</p>
     </div>
   </section>
 
@@ -272,12 +311,12 @@
     <div class="card">
       <h3>What we've had</h3>
       <ul id="history" class="history"></ul>
-      <p id="history-empty" class="note">Nothing yet — spin the wheel and tap “We're having this!”.</p>
+      <p id="history-empty" class="note">Nothing yet — spin the wheel or tap a picture on the Home screen.</p>
     </div>
     <div class="card">
       <h3>Last 7 days</h3>
       <ul id="history-counts"></ul>
-      <p id="history-counts-empty" class="note">No breakfasts logged this past week.</p>
+      <p id="history-counts-empty" class="note">No breakfasts this past week.</p>
       <div id="history-feelings-wrap" class="hidden">
         <h3 style="margin-top:16px">How we felt</h3>
         <div id="history-feelings" class="chips"></div>
@@ -345,14 +384,13 @@
     </div>
   </section>
 
-  <div id="kid" class="overlay hidden" role="dialog" aria-modal="true" aria-live="assertive">
+  <div id="kid" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="kid-top">
+      <button id="kid-close" class="round" type="button" aria-label="Back home">🏠</button>
+    </div>
     <div class="kid-inner">
-      <div class="kid-top">
-        <div class="dots" id="kid-dots"></div>
-        <button id="kid-skip" class="link" type="button">Skip</button>
-      </div>
 
-      <div id="kid-meal">
+      <div id="kid-meal" class="hidden">
         <div class="big-emoji" id="big-emoji"></div>
         <div class="big-name" id="big-name"></div>
         <div class="yay">Yay! 🎉</div>
@@ -360,18 +398,18 @@
 
       <div id="kid-pick" class="hidden" style="width:100%">
         <h2 class="kid-title" id="kid-title"></h2>
-        <p class="kid-sub">Tap as many as you like!</p>
+        <p class="kid-sub" id="kid-sub">Tap as many as you like!</p>
         <div class="pick-grid" id="kid-grid"></div>
       </div>
 
-      <div id="kid-done" class="hidden">
-        <div class="big-emoji" id="done-emoji"></div>
-        <h2 class="kid-title">Yummy! Let's eat!</h2>
-        <div class="summary" id="done-summary"></div>
+      <div id="kid-halloween" class="hidden">
+        <div class="count-num" id="hw-num"></div>
+        <h2 class="kid-title" id="hw-text"></h2>
+        <div class="pumpkins" id="hw-pumpkins"></div>
       </div>
 
-      <div class="controls">
-        <button id="kid-next" class="go" type="button">Next ➜</button>
+      <div class="kid-actions">
+        <button id="kid-done" class="go" type="button">Done ✓</button>
       </div>
     </div>
   </div>
@@ -461,6 +499,7 @@
     meals: "breakfastWheel.meals",
     fruits: "breakfastWheel.fruits",
     history: "breakfastWheel.history",
+    days: "breakfastWheel.days",
     updatedAt: "breakfastWheel.updatedAt",
     sync: "breakfastWheel.sync",
     sound: "breakfastWheel.sound",
@@ -486,6 +525,8 @@
     fruits: load(KEYS.fruits, DEFAULT_FRUITS.slice()),
     // [{id, date: "YYYY-MM-DD", mealId, name, emoji, fruit, fruits?, colors?, feelings?}]
     history: load(KEYS.history, []),
+    // Today's picks from the Home tiles: { "YYYY-MM-DD": { fruit: [...], colors: [...], feelings: [...], walk, animals, monsters } }
+    days: load(KEYS.days, {}),
     updatedAt: load(KEYS.updatedAt, 0)
   };
   normalize(state);
@@ -498,6 +539,9 @@
     if (!Array.isArray(s.history)) s.history = [];
     s.meals.forEach(m => { m.id = m.id || newId(); m.plate = Array.isArray(m.plate) ? m.plate : []; });
     s.history.forEach(h => { h.id = h.id || newId(); });
+    if (!s.days || typeof s.days !== "object" || Array.isArray(s.days)) s.days = {};
+    const cutoff = ymd(new Date(Date.now() - 120 * 86400000)); // keep about 4 months of picks
+    Object.keys(s.days).forEach(d => { if (d < cutoff) delete s.days[d]; });
     s.updatedAt = s.updatedAt || 0;
     return s;
   }
@@ -505,6 +549,7 @@
     save(KEYS.meals, state.meals);
     save(KEYS.fruits, state.fruits);
     save(KEYS.history, state.history);
+    save(KEYS.days, state.days);
     save(KEYS.updatedAt, state.updatedAt);
   }
 
@@ -613,7 +658,6 @@
   let rotation = 0;
   let spinning = false;
   let lightPhase = 0;
-  let current = null; // { meal, fruit, picks: { fruit: [], colors: [], feelings: [] } }
 
   function fitText(text, maxWidth, startPx, minPx) {
     let px = startPx;
@@ -738,7 +782,6 @@
 
     spinning = true;
     document.getElementById("spin").disabled = true;
-    document.getElementById("result").classList.add("hidden");
 
     function frame(now) {
       const t = Math.min(1, (now - t0) / duration);
@@ -756,250 +799,21 @@
     requestAnimationFrame(frame);
   }
 
+  // The last spin of the day becomes today's breakfast (re-spinning replaces it).
   function showResult(meal) {
+    const date = ymd(new Date());
     const fruit = state.fruits.length ? state.fruits[Math.floor(Math.random() * state.fruits.length)] : "";
-    current = { meal, fruit, picks: { fruit: [], colors: [], feelings: [] } };
+    const entry = { id: "day-" + date, date, mealId: meal.id, name: meal.name, emoji: meal.emoji, fruit };
+    change(s => { s.history = s.history.filter(h => h.id !== entry.id); s.history.push(entry); });
 
-    // Big celebration for the little ones, then their turn to pick
     document.getElementById("big-emoji").textContent = meal.emoji || "🍽️";
     document.getElementById("big-name").textContent = meal.name;
-    kidStep = 0;
-    renderKidStep();
-    document.getElementById("kid").classList.remove("hidden");
+    openOverlay("meal");
     confetti();
     fanfare();
     setTimeout(() => say(meal.name), 700);
     try { navigator.vibrate && navigator.vibrate([80, 60, 120]); } catch (e) {}
-
-    renderPlate();
-    const lock = document.getElementById("lock");
-    lock.disabled = false;
-    lock.textContent = "✅ We're having this!";
-    document.getElementById("result").classList.remove("hidden");
   }
-
-  // Details for the grown-ups
-  function renderPlate() {
-    if (!current) return;
-    const { meal, fruit, picks } = current;
-    document.getElementById("meal-name").textContent = (meal.emoji ? meal.emoji + " " : "") + meal.name;
-    document.getElementById("meal-heavy").innerHTML = meal.heavy
-      ? '<span class="note">Heavier meal</span><span class="tag">balance it out</span>' : "";
-    const plate = document.getElementById("meal-plate");
-    plate.innerHTML = "";
-    const fruitLine = picks.fruit.length ? "Fruit: " + picks.fruit.join(", ") + " ⭐ their pick!" : fruit ? "Fruit: " + fruit : "";
-    [...meal.plate, ...(fruitLine ? [fruitLine] : [])].forEach(item => {
-      const li = document.createElement("li");
-      li.textContent = item;
-      plate.appendChild(li);
-    });
-    renderKidPicks(document.getElementById("kid-picks"), picks);
-    document.getElementById("meal-tip").textContent = meal.tip ? "💡 " + meal.tip : "";
-  }
-
-  // Favorite colors + feelings as a small block (used on the plate card and in history).
-  function renderKidPicks(el, picks) {
-    el.innerHTML = "";
-    const colors = (picks.colors || []).map(id => COLORS.find(c => c.id === id)).filter(Boolean);
-    const feelings = (picks.feelings || []).map(id => FEELINGS.find(f => f.id === id)).filter(Boolean);
-    if (colors.length) {
-      const p = document.createElement("p");
-      p.append("Favorite colors: ");
-      colors.forEach((c, i) => {
-        const d = document.createElement("span");
-        d.className = "dot";
-        d.style.background = c.css;
-        d.title = c.name;
-        p.append(d, " " + c.name + (i < colors.length - 1 ? ", " : ""));
-      });
-      el.appendChild(p);
-    }
-    if (feelings.length) {
-      const p = document.createElement("p");
-      p.textContent = "Feeling: " + feelings.map(f => f.emoji + " " + f.name).join(", ");
-      el.appendChild(p);
-    }
-    el.classList.toggle("hidden", !colors.length && !feelings.length);
-  }
-
-  // ---------- little one's turn: fruit, colors, feelings ----------
-  // "🫐 Blueberries" -> { emoji: "🫐", name: "Blueberries" }; "Raspberries" -> { emoji: "", name: "Raspberries" }
-  function splitLabel(text) {
-    const m = text.match(/^([^\p{L}\p{N}]+?)\s+(.+)$/u);
-    return m ? { emoji: m[1], name: m[2] } : { emoji: "", name: text };
-  }
-
-  function berrySVG(fill, shine) {
-    const rows = [[32, 50, 68], [23, 41, 59, 77], [32, 50, 68], [41, 59], [50]];
-    let dots = "";
-    rows.forEach((xs, r) => xs.forEach(x => {
-      const y = 36 + r * 14;
-      dots += `<circle cx="${x}" cy="${y}" r="10.5" fill="${fill}"/><circle cx="${x - 3.5}" cy="${y - 3.5}" r="3" fill="${shine}" opacity=".75"/>`;
-    }));
-    return `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 30 L34 14 L46 22 L50 8 L54 22 L66 14 Z" fill="#4caf50" stroke="#2e7d32" stroke-width="2" stroke-linejoin="round"/>${dots}</svg>`;
-  }
-
-  // The picture for a fruit line: its emoji, a drawn berry, or a plate.
-  function fruitArt(text) {
-    const { emoji, name } = splitLabel(text);
-    const n = name.toLowerCase();
-    if (emoji) {
-      const span = document.createElement("span");
-      span.className = "art-emoji";
-      span.textContent = emoji;
-      return span;
-    }
-    const wrap = document.createElement("span");
-    wrap.style.height = "100%";
-    wrap.style.display = "flex";
-    if (n.includes("raspberr")) wrap.innerHTML = berrySVG("#e0245e", "#ffb3c8");
-    else if (n.includes("blackberr")) wrap.innerHTML = berrySVG("#3a1d4d", "#a58cc0");
-    else if (n.includes("blueberr")) wrap.innerHTML = berrySVG("#3f51b5", "#c5cae9");
-    else { wrap.className = "art-emoji"; wrap.textContent = "🍽️"; }
-    return wrap;
-  }
-
-  const KID_STEPS = [
-    { key: "meal" },
-    {
-      key: "fruit", title: "What fruit do you want?", cols: 2,
-      options: () => state.fruits.map(f => ({ id: f, name: splitLabel(f).name, art: () => fruitArt(f) }))
-    },
-    {
-      key: "colors", title: "What are your favorite colors?", cols: 3,
-      options: () => COLORS.map(c => ({
-        id: c.id, name: c.name,
-        art: () => { const d = document.createElement("span"); d.className = "swatch"; d.style.background = c.css; return d; }
-      }))
-    },
-    {
-      key: "feelings", title: "How are you feeling?", cols: 3,
-      options: () => FEELINGS.map(f => ({
-        id: f.id, name: f.name,
-        art: () => { const d = document.createElement("span"); d.className = "art-emoji"; d.textContent = f.emoji; return d; }
-      }))
-    },
-    { key: "done" }
-  ];
-  let kidStep = 0;
-
-  function activeKidSteps() {
-    return KID_STEPS.filter(st => st.key !== "fruit" || state.fruits.length);
-  }
-
-  function popSound(on) {
-    if (on) { tone(660, 0.09, "sine", 0.18); tone(990, 0.12, "sine", 0.15, 0.07); }
-    else tone(440, 0.1, "sine", 0.12);
-  }
-
-  function renderKidStep() {
-    const steps = activeKidSteps();
-    const st = steps[kidStep];
-    const dots = document.getElementById("kid-dots");
-    dots.innerHTML = "";
-    steps.forEach((_, i) => {
-      const d = document.createElement("span");
-      if (i === kidStep) d.className = "on";
-      else if (i < kidStep) d.className = "done";
-      dots.appendChild(d);
-    });
-    document.getElementById("kid-meal").classList.toggle("hidden", st.key !== "meal");
-    document.getElementById("kid-pick").classList.toggle("hidden", !st.options);
-    document.getElementById("kid-done").classList.toggle("hidden", st.key !== "done");
-    document.getElementById("kid-skip").classList.toggle("hidden", st.key === "done");
-    const next = document.getElementById("kid-next");
-    const isLastPick = steps[kidStep + 1] && steps[kidStep + 1].key === "done";
-    next.textContent = st.key === "done" ? "Let's eat! 😋" : isLastPick ? "All done ➜" : "Next ➜";
-
-    if (st.options) {
-      document.getElementById("kid-title").textContent = st.title;
-      const grid = document.getElementById("kid-grid");
-      grid.className = "pick-grid" + (st.cols === 3 ? " cols-3" : "");
-      grid.innerHTML = "";
-      const chosen = current.picks[st.key];
-      st.options().forEach(opt => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "pick";
-        b.setAttribute("aria-pressed", String(chosen.includes(opt.id)));
-        const art = document.createElement("span");
-        art.className = "art";
-        art.appendChild(opt.art());
-        const label = document.createElement("span");
-        label.textContent = opt.name;
-        const check = document.createElement("span");
-        check.className = "check";
-        check.textContent = "✓";
-        b.append(art, label, check);
-        b.addEventListener("click", () => {
-          const i = chosen.indexOf(opt.id);
-          const on = i < 0;
-          if (on) chosen.push(opt.id); else chosen.splice(i, 1);
-          b.setAttribute("aria-pressed", String(on));
-          b.classList.remove("boing");
-          void b.offsetWidth;
-          if (on) b.classList.add("boing");
-          popSound(on);
-          if (on) say(opt.name);
-        });
-        grid.appendChild(b);
-      });
-      say(st.title);
-    }
-
-    if (st.key === "done") {
-      document.getElementById("done-emoji").textContent = current.meal.emoji || "🍽️";
-      const sum = document.getElementById("done-summary");
-      sum.innerHTML = "";
-      let delay = 0;
-      const add = el => { el.style.animationDelay = (delay += 0.08) + "s"; sum.appendChild(el); };
-      current.picks.fruit.forEach(f => {
-        const c = document.createElement("span");
-        c.className = "chip-art";
-        c.title = splitLabel(f).name;
-        c.appendChild(fruitArt(f));
-        add(c);
-      });
-      current.picks.colors.forEach(id => {
-        const col = COLORS.find(c => c.id === id);
-        if (!col) return;
-        const d = document.createElement("span");
-        d.className = "dot";
-        d.title = col.name;
-        d.style.background = col.css;
-        add(d);
-      });
-      current.picks.feelings.forEach(id => {
-        const f = FEELINGS.find(x => x.id === id);
-        if (!f) return;
-        const c = document.createElement("span");
-        c.className = "chip-art";
-        c.title = f.name;
-        c.textContent = f.emoji;
-        add(c);
-      });
-      confetti();
-      fanfare();
-      setTimeout(() => say("Yummy! Let's eat!"), 500);
-    }
-    document.getElementById("kid").scrollTop = 0;
-  }
-
-  function closeKid() {
-    document.getElementById("kid").classList.add("hidden");
-    try { speechSynthesis.cancel(); } catch (e) {}
-    renderPlate();
-    document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-
-  document.getElementById("kid-next").addEventListener("click", () => {
-    if (!current) return closeKid();
-    if (kidStep >= activeKidSteps().length - 1) return closeKid();
-    kidStep++;
-    tone(880, 0.08, "triangle", 0.12);
-    renderKidStep();
-  });
-  document.getElementById("kid-skip").addEventListener("click", closeKid);
 
   // ---------- confetti ----------
   function confetti() {
@@ -1050,19 +864,252 @@
     if (sync.cfg) sync.push(op);
   }
 
-  function lockIn() {
-    if (!current) return;
-    const { meal, fruit, picks } = current;
-    const entry = {
-      id: newId(), date: ymd(new Date()), mealId: meal.id, name: meal.name, emoji: meal.emoji,
-      fruit: picks.fruit.length ? picks.fruit.join(", ") : fruit,
-      fruits: picks.fruit.slice(), colors: picks.colors.slice(), feelings: picks.feelings.slice()
-    };
-    change(s => { if (!s.history.some(h => h.id === entry.id)) s.history.push(entry); });
-    const lock = document.getElementById("lock");
-    lock.disabled = true;
-    lock.textContent = "Enjoy! 😋";
-    current = null;
+  // ---------- pictures ----------
+  // "🫐 Blueberries" -> { emoji: "🫐", name: "Blueberries" }; "Raspberries" -> { emoji: "", name: "Raspberries" }
+  function splitLabel(text) {
+    const m = text.match(/^([^\p{L}\p{N}]+?)\s+(.+)$/u);
+    return m ? { emoji: m[1], name: m[2] } : { emoji: "", name: text };
+  }
+
+  function berrySVG(fill, shine) {
+    const rows = [[32, 50, 68], [23, 41, 59, 77], [32, 50, 68], [41, 59], [50]];
+    let dots = "";
+    rows.forEach((xs, r) => xs.forEach(x => {
+      const y = 36 + r * 14;
+      dots += `<circle cx="${x}" cy="${y}" r="10.5" fill="${fill}"/><circle cx="${x - 3.5}" cy="${y - 3.5}" r="3" fill="${shine}" opacity=".75"/>`;
+    }));
+    return `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 30 L34 14 L46 22 L50 8 L54 22 L66 14 Z" fill="#4caf50" stroke="#2e7d32" stroke-width="2" stroke-linejoin="round"/>${dots}</svg>`;
+  }
+
+  // Drawings for things that have no emoji.
+  const ART_SVG = {
+    wagon: `<svg viewBox="0 0 106 78" aria-hidden="true">
+      <path d="M86 32 Q98 28 100 14" stroke="#555" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <circle cx="100" cy="11" r="5" fill="#555"/>
+      <path d="M12 26 L88 26 L82 54 L18 54 Z" fill="#e53935" stroke="#9a1f1f" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="18" y="31" width="64" height="6" rx="3" fill="#ff8a80" opacity=".8"/>
+      <circle cx="30" cy="62" r="11" fill="#333"/><circle cx="30" cy="62" r="4" fill="#ccc"/>
+      <circle cx="70" cy="62" r="11" fill="#333"/><circle cx="70" cy="62" r="4" fill="#ccc"/></svg>`,
+    stroller: `<svg viewBox="0 0 100 92" aria-hidden="true">
+      <path d="M74 44 L84 14 L96 14" stroke="#555" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M30 66 L24 78 M62 66 L68 78" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+      <path d="M16 44 L76 44 Q76 66 54 66 L36 66 Q16 66 16 44 Z" fill="#7986cb" stroke="#3949ab" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M16 44 A32 32 0 0 1 48 12 L48 44 Z" fill="#5c6bc0" stroke="#3949ab" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="24" cy="80" r="9" fill="#333"/><circle cx="24" cy="80" r="3.5" fill="#ccc"/>
+      <circle cx="68" cy="80" r="9" fill="#333"/><circle cx="68" cy="80" r="3.5" fill="#ccc"/></svg>`
+  };
+
+  // The picture for a fruit line: its emoji, a drawn berry, or a plate.
+  function fruitArt(text) {
+    const { emoji, name } = splitLabel(text);
+    const n = name.toLowerCase();
+    if (emoji) {
+      const span = document.createElement("span");
+      span.className = "art-emoji";
+      span.textContent = emoji;
+      return span;
+    }
+    const wrap = document.createElement("span");
+    wrap.style.height = "100%";
+    wrap.style.display = "flex";
+    if (n.includes("raspberr")) wrap.innerHTML = berrySVG("#e0245e", "#ffb3c8");
+    else if (n.includes("blackberr")) wrap.innerHTML = berrySVG("#3a1d4d", "#a58cc0");
+    else if (n.includes("blueberr")) wrap.innerHTML = berrySVG("#3f51b5", "#c5cae9");
+    else { wrap.className = "art-emoji"; wrap.textContent = "🍽️"; }
+    return wrap;
+  }
+
+  // Big picture for a choice card: a color swatch, a drawing, a fruit, or an emoji.
+  function optionArt(opt) {
+    if (opt.css) {
+      const d = document.createElement("span");
+      d.className = "swatch";
+      d.style.background = opt.css;
+      return d;
+    }
+    if (opt.fruit) return fruitArt(opt.fruit);
+    const span = document.createElement("span");
+    if (opt.svg) {
+      span.style.height = "100%";
+      span.style.display = "flex";
+      span.innerHTML = ART_SVG[opt.svg];
+    } else {
+      span.className = "art-emoji";
+      span.textContent = opt.emoji || "⭐";
+    }
+    return span;
+  }
+
+  // Small picture for the Home tiles and summaries.
+  function miniArt(opt) {
+    const m = document.createElement("span");
+    m.className = "mini";
+    m.title = opt.name;
+    if (opt.css) {
+      m.classList.add("dot");
+      m.style.background = opt.css;
+    } else {
+      const art = optionArt(opt);
+      art.className = "";
+      art.style.height = "100%";
+      m.appendChild(art);
+    }
+    return m;
+  }
+
+  // ---------- today's questions ----------
+  const WALK = [
+    { id: "scooter", name: "Scooter", emoji: "🛴" },
+    { id: "bike", name: "Bike", emoji: "🚲" },
+    { id: "wagon", name: "Wagon", svg: "wagon" },
+    { id: "stroller", name: "Stroller", svg: "stroller" }
+  ];
+
+  const ANIMALS = [
+    ["dog", "Dog", "🐶"], ["cat", "Cat", "🐱"], ["bunny", "Bunny", "🐰"], ["mouse", "Mouse", "🐭"],
+    ["bear", "Bear", "🐻"], ["panda", "Panda", "🐼"], ["koala", "Koala", "🐨"], ["lion", "Lion", "🦁"],
+    ["tiger", "Tiger", "🐯"], ["monkey", "Monkey", "🐵"], ["fox", "Fox", "🦊"], ["sloth", "Sloth", "🦥"],
+    ["elephant", "Elephant", "🐘"], ["giraffe", "Giraffe", "🦒"], ["zebra", "Zebra", "🦓"], ["hippo", "Hippo", "🦛"],
+    ["cow", "Cow", "🐮"], ["pig", "Pig", "🐷"], ["horse", "Horse", "🐴"], ["unicorn", "Unicorn", "🦄"],
+    ["chicken", "Chicken", "🐔"], ["duck", "Duck", "🦆"], ["owl", "Owl", "🦉"], ["penguin", "Penguin", "🐧"],
+    ["flamingo", "Flamingo", "🦩"], ["frog", "Frog", "🐸"], ["turtle", "Turtle", "🐢"], ["snake", "Snake", "🐍"],
+    ["dinosaur", "Dinosaur", "🦖"], ["fish", "Fish", "🐠"], ["octopus", "Octopus", "🐙"], ["dolphin", "Dolphin", "🐬"],
+    ["whale", "Whale", "🐳"], ["shark", "Shark", "🦈"], ["crab", "Crab", "🦀"], ["hedgehog", "Hedgehog", "🦔"],
+    ["butterfly", "Butterfly", "🦋"], ["bee", "Bee", "🐝"], ["ladybug", "Ladybug", "🐞"], ["snail", "Snail", "🐌"]
+  ].map(([id, name, emoji]) => ({ id, name, emoji }));
+
+  const MONSTERS = [
+    ["ghost", "Ghost", "👻"], ["space", "Space Monster", "👾"], ["dragon", "Dragon", "🐉"], ["alien", "Alien", "👽"],
+    ["troll", "Troll", "🧌"], ["vampire", "Vampire", "🧛"], ["zombie", "Zombie", "🧟"], ["sea", "Sea Monster", "🦑"],
+    ["robot", "Robot Monster", "🤖"]
+  ].map(([id, name, emoji]) => ({ id, name, emoji }));
+
+  const QUESTIONS = {
+    fruit: {
+      label: "Fruit", icon: "🍓", tile: "#ffe0e6", cols: 2, title: "What fruit do you want?",
+      options: () => state.fruits.map(f => ({ id: f, name: splitLabel(f).name, fruit: f }))
+    },
+    feelings: { label: "Feelings", icon: "😊", tile: "#fff4c2", cols: 3, title: "How are you feeling?", options: () => FEELINGS },
+    colors: { label: "Colors", icon: "🎨", tile: "#dff0ff", cols: 3, title: "What are your favorite colors?", options: () => COLORS },
+    walk: { label: "Walk", icon: "🛴", tile: "#e3f6e5", cols: 2, title: "What do you want to take on the morning walk?", options: () => WALK },
+    animals: { label: "Animal", icon: "🐶", tile: "#ffeedd", cols: 3, title: "What's your favorite animal today?", options: () => ANIMALS },
+    monsters: { label: "Monster", icon: "👾", tile: "#ece4fb", cols: 3, title: "What's your favorite monster today?", options: () => MONSTERS }
+  };
+  const TILE_ORDER = ["breakfast", "fruit", "feelings", "colors", "walk", "animals", "monsters", "halloween"];
+
+  // Find the option for a saved pick (fruits are saved as their text, so they still draw if the list changes).
+  function findOption(key, id) {
+    const q = QUESTIONS[key];
+    const opt = q && q.options().find(o => o.id === id);
+    if (opt) return opt;
+    if (key === "fruit") return { id, name: splitLabel(id).name, fruit: id };
+    return null;
+  }
+
+  const todayKey = () => ymd(new Date());
+  const picksFor = date => state.days[date] || {};
+  function breakfastOn(date) {
+    const list = state.history.filter(h => h.date === date);
+    return list[list.length - 1] || null;
+  }
+
+  function daysUntilHalloween() {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let h = new Date(now.getFullYear(), 9, 31);
+    if (today > h) h = new Date(now.getFullYear() + 1, 9, 31);
+    return Math.round((h - today) / 86400000);
+  }
+
+  // ---------- home ----------
+  function renderHome() {
+    const hour = new Date().getHours();
+    document.getElementById("home-hello").textContent =
+      hour < 12 ? "Good morning! ☀️" : hour < 17 ? "Good afternoon! 🌤️" : "Good evening! 🌙";
+    const tiles = document.getElementById("tiles");
+    tiles.innerHTML = "";
+    const picks = picksFor(todayKey());
+
+    TILE_ORDER.forEach(key => {
+      if (key === "fruit" && !state.fruits.length) return;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "tile";
+      b.dataset.key = key;
+      const icon = document.createElement("span");
+      icon.className = "tile-icon";
+      const label = document.createElement("span");
+      label.className = "tile-label";
+
+      if (key === "breakfast") {
+        const bf = breakfastOn(todayKey());
+        b.classList.add("wide");
+        b.style.setProperty("--tile", "#ffe6bf");
+        icon.textContent = bf ? (bf.emoji || "🍽️") : "🎡";
+        label.textContent = bf ? bf.name : "Spin for breakfast";
+        if (bf) b.classList.add("done");
+        b.append(icon, label);
+        b.addEventListener("click", () => showView("spin"));
+      } else if (key === "halloween") {
+        const n = daysUntilHalloween();
+        b.classList.add("wide");
+        b.style.setProperty("--tile", "#ffd9b3");
+        icon.textContent = "🎃";
+        label.textContent = n === 0 ? "It's Halloween!" : n + (n === 1 ? " day" : " days") + " to Halloween";
+        b.append(icon, label);
+        b.addEventListener("click", openHalloween);
+      } else {
+        const q = QUESTIONS[key];
+        const chosen = (picks[key] || []).map(id => findOption(key, id)).filter(Boolean);
+        b.style.setProperty("--tile", q.tile);
+        label.textContent = q.label;
+        if (chosen.length) {
+          b.classList.add("done");
+          const row = document.createElement("span");
+          row.className = "tile-picks";
+          chosen.slice(0, 4).forEach(o => row.appendChild(miniArt(o)));
+          if (chosen.length > 4) {
+            const more = document.createElement("span");
+            more.className = "more";
+            more.textContent = "+" + (chosen.length - 4);
+            row.appendChild(more);
+          }
+          b.append(row, label);
+          b.setAttribute("aria-label", q.label + ": " + chosen.map(o => o.name).join(", "));
+        } else {
+          icon.textContent = q.icon;
+          b.append(icon, label);
+        }
+        b.addEventListener("click", () => openPicker(key));
+      }
+      tiles.appendChild(b);
+    });
+
+    renderPlate();
+    renderWeekly();
+  }
+
+  // Details for the grown-ups about today's breakfast.
+  function renderPlate() {
+    const card = document.getElementById("result");
+    const bf = breakfastOn(todayKey());
+    if (!bf) { card.classList.add("hidden"); return; }
+    const meal = state.meals.find(m => m.id === bf.mealId) || { name: bf.name, emoji: bf.emoji, plate: [], tip: "" };
+    document.getElementById("meal-name").textContent = (bf.emoji ? bf.emoji + " " : "") + bf.name;
+    document.getElementById("meal-heavy").innerHTML = meal.heavy
+      ? '<span class="note">Heavier meal</span><span class="tag">balance it out</span>' : "";
+    const plate = document.getElementById("meal-plate");
+    plate.innerHTML = "";
+    const fruitPicks = picksFor(todayKey()).fruit || [];
+    const fruitLine = fruitPicks.length ? "Fruit: " + fruitPicks.join(", ") + " ⭐ their pick!"
+      : bf.fruit ? "Fruit: " + bf.fruit + " (or tap Fruit to let them choose)" : "";
+    [...(meal.plate || []), ...(fruitLine ? [fruitLine] : [])].forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      plate.appendChild(li);
+    });
+    document.getElementById("meal-tip").textContent = meal.tip ? "💡 " + meal.tip : "";
+    card.classList.remove("hidden");
   }
 
   function renderWeekly() {
@@ -1078,55 +1125,209 @@
     });
   }
 
+  // ---------- full-screen kid dialogs ----------
+  // While one is open the page behind it is pinned in place so little fingers can't scroll it.
+  let overlayMode = null; // "meal" | "pick" | "halloween"
+  let pickKey = null;
+  let pickSel = [];
+  let lockedY = 0;
+
+  function lockScroll() {
+    if (document.body.style.position === "fixed") return;
+    lockedY = window.scrollY;
+    Object.assign(document.body.style, { position: "fixed", top: -lockedY + "px", left: "0", right: "0", overflow: "hidden" });
+  }
+  function unlockScroll() {
+    if (document.body.style.position !== "fixed") return;
+    Object.assign(document.body.style, { position: "", top: "", left: "", right: "", overflow: "" });
+    window.scrollTo(0, lockedY);
+  }
+
+  function openOverlay(mode) {
+    overlayMode = mode;
+    ["meal", "pick", "halloween"].forEach(m =>
+      document.getElementById("kid-" + m).classList.toggle("hidden", m !== mode));
+    const done = document.getElementById("kid-done");
+    done.textContent = mode === "pick" ? "Done ✓" : "Yay! 🏠";
+    done.classList.toggle("waiting", mode === "pick" && !pickSel.length);
+    const ov = document.getElementById("kid");
+    ov.classList.remove("hidden");
+    ov.scrollTop = 0;
+    lockScroll();
+  }
+
+  function closeOverlay() {
+    const wasMode = overlayMode;
+    overlayMode = null;
+    document.getElementById("kid").classList.add("hidden");
+    unlockScroll();
+    try { speechSynthesis.cancel(); } catch (e) {}
+    if (pendingRemote) { const r = pendingRemote; pendingRemote = null; applyRemote(r); }
+    if (wasMode === "meal") showView("home");
+  }
+
+  function popSound(on) {
+    if (on) { tone(660, 0.09, "sine", 0.18); tone(990, 0.12, "sine", 0.15, 0.07); }
+    else tone(440, 0.1, "sine", 0.12);
+  }
+
+  function openPicker(key) {
+    const q = QUESTIONS[key];
+    const options = q.options();
+    pickKey = key;
+    pickSel = (picksFor(todayKey())[key] || []).filter(id => options.some(o => o.id === id));
+    document.getElementById("kid-title").textContent = q.title;
+    const grid = document.getElementById("kid-grid");
+    grid.className = "pick-grid" + (q.cols === 3 ? " cols-3" : "");
+    grid.innerHTML = "";
+    options.forEach(opt => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "pick";
+      b.setAttribute("aria-pressed", String(pickSel.includes(opt.id)));
+      const art = document.createElement("span");
+      art.className = "art";
+      art.appendChild(optionArt(opt));
+      const label = document.createElement("span");
+      label.textContent = opt.name;
+      const check = document.createElement("span");
+      check.className = "check";
+      check.textContent = "✓";
+      b.append(art, label, check);
+      b.addEventListener("click", () => {
+        const i = pickSel.indexOf(opt.id);
+        const on = i < 0;
+        if (on) pickSel.push(opt.id); else pickSel.splice(i, 1);
+        b.setAttribute("aria-pressed", String(on));
+        b.classList.remove("boing");
+        void b.offsetWidth;
+        if (on) b.classList.add("boing");
+        popSound(on);
+        if (on) say(opt.name);
+        document.getElementById("kid-done").classList.toggle("waiting", !pickSel.length);
+      });
+      grid.appendChild(b);
+    });
+    openOverlay("pick");
+    say(q.title);
+  }
+
+  function savePicks() {
+    if (!pickSel.length) {
+      // Nothing chosen yet: wiggle the cards and ask again instead of moving on.
+      const grid = document.getElementById("kid-grid");
+      grid.classList.remove("shake");
+      void grid.offsetWidth;
+      grid.classList.add("shake");
+      tone(300, 0.15, "sine", 0.12);
+      say("Tap a picture first!");
+      return;
+    }
+    const date = todayKey(), key = pickKey, sel = pickSel.slice();
+    closeOverlay();
+    change(s => {
+      s.days[date] = Object.assign({}, s.days[date]);
+      s.days[date][key] = sel.slice();
+    });
+    confetti();
+    fanfare();
+    say("Great job!");
+    const tile = document.querySelector('.tile[data-key="' + key + '"]');
+    if (tile) tile.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function openHalloween() {
+    const n = daysUntilHalloween();
+    document.getElementById("hw-num").textContent = n === 0 ? "🎃" : n;
+    document.getElementById("hw-text").textContent = n === 0 ? "It's Halloween today! 👻"
+      : (n === 1 ? "day" : "days") + " until Halloween!";
+    const row = document.getElementById("hw-pumpkins");
+    row.innerHTML = "";
+    // One pumpkin per day (when it's few enough to count), otherwise a little spooky parade.
+    const icons = n > 0 && n <= 60 ? Array(n).fill("🎃") : ["🎃", "👻", "🦇", "🕷️", "🍬", "🎃", "👻"];
+    icons.forEach((ic, i) => {
+      const sp = document.createElement("span");
+      sp.textContent = ic;
+      sp.style.animationDelay = Math.min(i * 0.04, 1.5) + "s";
+      row.appendChild(sp);
+    });
+    openOverlay("halloween");
+    if (n === 0) confetti();
+    fanfare();
+    setTimeout(() => say(n === 0 ? "It's Halloween today!" : n + (n === 1 ? " day" : " days") + " until Halloween!"), 400);
+  }
+
+  document.getElementById("kid-done").addEventListener("click", () => {
+    if (overlayMode === "pick") savePicks();
+    else closeOverlay();
+  });
+  document.getElementById("kid-close").addEventListener("click", closeOverlay);
+
   // ---------- history ----------
+  // One row per day: the breakfast plus everything picked on the Home tiles.
   function renderHistory() {
     const list = document.getElementById("history");
     list.innerHTML = "";
-    const entries = state.history.map((h, i) => ({ ...h, i }))
-      .sort((a, b) => b.date.localeCompare(a.date) || b.i - a.i)
-      .slice(0, 30);
-    document.getElementById("history-empty").classList.toggle("hidden", entries.length > 0);
-    entries.forEach(h => {
+    const dates = new Set(state.history.map(h => h.date));
+    Object.entries(state.days).forEach(([d, p]) => {
+      if (Object.values(p).some(a => Array.isArray(a) && a.length)) dates.add(d);
+    });
+    const sorted = [...dates].sort().reverse().slice(0, 30);
+    document.getElementById("history-empty").classList.toggle("hidden", sorted.length > 0);
+
+    sorted.forEach(date => {
       const li = document.createElement("li");
       const day = document.createElement("span");
       day.className = "day";
-      day.textContent = dayLabel(h.date);
+      day.textContent = dayLabel(date);
       const what = document.createElement("span");
       what.className = "what";
-      what.textContent = (h.emoji ? h.emoji + " " : "") + h.name;
-      if (h.fruit) {
-        const f = document.createElement("span");
-        f.className = "fruit";
-        f.textContent = "with " + h.fruit;
-        what.appendChild(f);
-      }
-      if ((h.colors && h.colors.length) || (h.feelings && h.feelings.length)) {
-        const extra = document.createElement("span");
-        extra.className = "fruit";
-        (h.colors || []).forEach(id => {
-          const c = COLORS.find(x => x.id === id);
-          if (!c) return;
-          const d = document.createElement("span");
-          d.className = "dot";
-          d.title = c.name;
-          d.style.background = c.css;
-          d.style.marginRight = "3px";
-          extra.appendChild(d);
+
+      const entries = state.history.filter(h => h.date === date);
+      entries.forEach(h => {
+        const row = document.createElement("div");
+        row.className = "meal-row";
+        const name = document.createElement("span");
+        name.textContent = (h.emoji ? h.emoji + " " : "") + h.name;
+        const del = document.createElement("button");
+        del.className = "icon";
+        del.title = "Remove this breakfast";
+        del.setAttribute("aria-label", "Remove " + h.name + " on " + h.date);
+        del.textContent = "✕";
+        del.addEventListener("click", () => {
+          if (!confirm("Remove " + h.name + " (" + dayLabel(h.date) + ") from history?")) return;
+          change(s => { s.history = s.history.filter(x => x.id !== h.id); });
         });
-        const feel = (h.feelings || []).map(id => FEELINGS.find(x => x.id === id)).filter(Boolean);
-        if (feel.length) extra.append(" feeling " + feel.map(f => f.emoji + " " + f.name).join(", "));
-        what.appendChild(extra);
-      }
-      const del = document.createElement("button");
-      del.className = "icon";
-      del.title = "Remove this entry";
-      del.setAttribute("aria-label", "Remove " + h.name + " on " + h.date);
-      del.textContent = "✕";
-      del.addEventListener("click", () => {
-        if (!confirm("Remove " + h.name + " (" + dayLabel(h.date) + ") from history?")) return;
-        change(s => { s.history = s.history.filter(x => x.id !== h.id); });
+        row.append(name, del);
+        what.appendChild(row);
       });
-      li.append(day, what, del);
+
+      // Picks from that day (older entries kept their colors/feelings on the breakfast itself).
+      const picks = Object.assign({}, picksFor(date));
+      entries.forEach(h => {
+        if (h.fruits && h.fruits.length && !picks.fruit) picks.fruit = h.fruits;
+        if (h.colors && h.colors.length && !picks.colors) picks.colors = h.colors;
+        if (h.feelings && h.feelings.length && !picks.feelings) picks.feelings = h.feelings;
+      });
+      Object.keys(QUESTIONS).forEach(key => {
+        const opts = (picks[key] || []).map(id => findOption(key, id)).filter(Boolean);
+        if (!opts.length) return;
+        const line = document.createElement("span");
+        line.className = "fruit";
+        line.append(QUESTIONS[key].label + ": ");
+        opts.forEach((o, i) => {
+          if (o.css) {
+            const d = document.createElement("span");
+            d.className = "dot";
+            d.style.background = o.css;
+            line.append(d, " ");
+          } else if (o.emoji) line.append(o.emoji + " ");
+          line.append(o.name + (i < opts.length - 1 ? ", " : ""));
+        });
+        what.appendChild(line);
+      });
+
+      li.append(day, what);
       list.appendChild(li);
     });
 
@@ -1139,9 +1340,16 @@
     cl.innerHTML = "";
     const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
     document.getElementById("history-counts-empty").classList.toggle("hidden", rows.length > 0);
+    rows.forEach(([k, n]) => {
+      const li = document.createElement("li");
+      li.textContent = k + " — " + n + (n === 1 ? " time" : " times");
+      cl.appendChild(li);
+    });
+
     const feelCounts = {};
-    state.history.filter(h => daysAgo(h.date) < 7).forEach(h =>
-      (h.feelings || []).forEach(id => { feelCounts[id] = (feelCounts[id] || 0) + 1; }));
+    const addFeelings = ids => (ids || []).forEach(id => { feelCounts[id] = (feelCounts[id] || 0) + 1; });
+    Object.entries(state.days).forEach(([d, p]) => { if (daysAgo(d) < 7) addFeelings(p.feelings); });
+    state.history.filter(h => daysAgo(h.date) < 7 && !(state.days[h.date] || {}).feelings).forEach(h => addFeelings(h.feelings));
     const fc = document.getElementById("history-feelings");
     fc.innerHTML = "";
     Object.entries(feelCounts).sort((a, b) => b[1] - a[1]).forEach(([id, n]) => {
@@ -1152,11 +1360,6 @@
       fc.appendChild(chip);
     });
     document.getElementById("history-feelings-wrap").classList.toggle("hidden", !fc.children.length);
-    rows.forEach(([k, n]) => {
-      const li = document.createElement("li");
-      li.textContent = k + " — " + n + (n === 1 ? " time" : " times");
-      cl.appendChild(li);
-    });
   }
 
   // ---------- menu editor ----------
@@ -1324,8 +1527,8 @@
   });
 
   document.getElementById("clear-history").addEventListener("click", () => {
-    if (!confirm("Clear all breakfast history? This also unlocks the once-a-week treats.")) return;
-    change(s => { s.history = []; });
+    if (!confirm("Clear all history, including the kids' picks? This also unlocks the once-a-week treats.")) return;
+    change(s => { s.history = []; s.days = {}; });
   });
 
   // ---------- sync (Supabase) ----------
@@ -1414,6 +1617,7 @@
         const merged = normalize(remote);
         const ids = new Set(merged.history.map(h => h.id));
         state.history.forEach(h => { if (!ids.has(h.id)) merged.history.push(h); });
+        Object.entries(state.days).forEach(([d, picks]) => { merged.days[d] = Object.assign({}, picks, merged.days[d] || {}); });
         merged.updatedAt = Date.now();
         await this.put(merged);
         applyRemote(merged);
@@ -1430,10 +1634,11 @@
   };
 
   function applyRemote(remote) {
-    if (spinning) { pendingRemote = remote; return; }
+    if (spinning || overlayMode === "pick") { pendingRemote = remote; return; }
     state.meals = remote.meals;
     state.fruits = remote.fruits;
     state.history = remote.history;
+    state.days = remote.days;
     state.updatedAt = remote.updatedAt;
     saveLocal();
     refresh();
@@ -1517,22 +1722,28 @@
   });
 
   // ---------- tabs ----------
+  function showView(name) {
+    ["home", "spin", "history", "menu"].forEach(t =>
+      document.getElementById("tab-" + t).classList.toggle("hidden", t !== name));
+    const tab = name === "spin" ? "home" : name;
+    document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
+    if (name === "history") renderHistory();
+    if (name === "spin") draw();
+    if (name === "home") renderHome();
+    window.scrollTo(0, 0);
+  }
   document.querySelectorAll(".tabs button").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(b === btn)));
-      ["spin", "history", "menu"].forEach(t =>
-        document.getElementById("tab-" + t).classList.toggle("hidden", t !== btn.dataset.tab));
-      if (btn.dataset.tab === "history") renderHistory();
-      if (btn.dataset.tab === "spin") draw();
+      showView(btn.dataset.tab);
       if (sync.cfg) sync.pull();
     });
   });
 
-  function refresh() { draw(); renderWeekly(); renderHistory(); }
+  function refresh() { draw(); renderHome(); renderHistory(); }
 
   document.getElementById("spin").addEventListener("click", spin);
   document.getElementById("wheel-wrap").addEventListener("click", spin);
-  document.getElementById("lock").addEventListener("click", lockIn);
+  document.getElementById("spin-home").addEventListener("click", () => showView("home"));
 
   renderSound();
   renderMenuEditor(null);
@@ -1556,7 +1767,9 @@
   // Keep devices in step: check for changes every 15s while the page is open, and when it comes back.
   setInterval(() => { if (sync.cfg && document.visibilityState === "visible") sync.pull(); }, 15000);
   document.addEventListener("visibilitychange", () => {
-    if (sync.cfg && document.visibilityState === "visible") sync.pull();
+    if (document.visibilityState !== "visible") return;
+    renderHome(); // a new day starts with fresh tiles
+    if (sync.cfg) sync.pull();
   });
 </script>
 </body>
