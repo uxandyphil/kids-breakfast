@@ -45,7 +45,8 @@
     -webkit-tap-highlight-color: transparent;
   }
   header { width: min(100%, 460px); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  h1 { margin: 4px 0; font-size: clamp(1.15rem, 5.5vw, 1.7rem); white-space: nowrap; }
+  h1 { margin: 4px 0; font-size: clamp(1.1rem, 5.2vw, 1.7rem); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  header > div { flex: none; }
   .pill {
     font-size: .8rem; padding: 4px 10px; border-radius: 999px; border: 2px solid var(--border);
     background: var(--card); color: var(--muted); cursor: pointer; white-space: nowrap;
@@ -118,17 +119,62 @@
   .note { color: var(--muted); font-size: .9rem; }
   .hidden { display: none !important; }
 
-  /* Celebration */
+  /* Celebration + little one's turn */
   .overlay {
     position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; text-align: center; padding: 16px;
-    background: rgba(255, 248, 236, .92); cursor: pointer;
+    align-items: center; text-align: center; padding: 16px; overflow-y: auto;
+    background: rgba(255, 248, 236, .96);
   }
-  @media (prefers-color-scheme: dark) { .overlay { background: rgba(29, 24, 20, .92); } }
+  @media (prefers-color-scheme: dark) { .overlay { background: rgba(29, 24, 20, .96); } }
+  .kid-inner { margin: auto; width: min(100%, 520px); display: flex; flex-direction: column; align-items: center; }
+  .kid-top { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .dots { display: flex; gap: 8px; }
+  .dots span { width: 12px; height: 12px; border-radius: 50%; background: var(--border); transition: all .2s; }
+  .dots span.on { background: var(--accent); width: 28px; border-radius: 6px; }
+  .dots span.done { background: var(--accent); opacity: .45; }
   .overlay .big-emoji { font-size: min(48vw, 220px); line-height: 1.1; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both, float 1.4s ease-in-out .7s infinite; }
   .overlay .big-name { font-size: clamp(2rem, 10vw, 3.2rem); font-weight: bold; margin-top: 8px; animation: pop .5s .25s both; }
   .overlay .yay { font-size: 1.6rem; margin-top: 6px; animation: pop .5s .45s both; }
-  .overlay .note { margin-top: 24px; }
+  .kid-title { font-size: clamp(1.6rem, 7.5vw, 2.4rem); margin: 4px 0 2px; animation: pop .4s both; }
+  .kid-sub { color: var(--muted); margin: 0 0 6px; }
+  .pick-grid { display: grid; gap: 14px; width: 100%; margin: 10px 0 18px; grid-template-columns: repeat(2, 1fr); }
+  .pick-grid.cols-3 { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .pick {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    background: var(--card); color: var(--ink); border: 4px solid var(--border); border-radius: 24px;
+    padding: 10px 6px 12px; font-size: 1.15rem; box-shadow: 0 5px 0 rgba(0,0,0,.12);
+    transition: transform .15s, border-color .15s, box-shadow .15s;
+  }
+  .pick-grid.cols-3 .pick { font-size: .95rem; border-radius: 20px; padding: 8px 4px 10px; }
+  .pick[aria-pressed="true"] {
+    border-color: var(--accent); transform: scale(1.04);
+    box-shadow: 0 0 0 5px rgba(232,87,42,.25), 0 5px 0 rgba(0,0,0,.12);
+  }
+  .pick.boing { animation: boing .35s ease-out; }
+  @keyframes boing { 0% { transform: scale(1) } 45% { transform: scale(1.16) } 100% { transform: scale(1.04) } }
+  .pick .art { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; }
+  .pick-grid.cols-3 .pick .art { height: 72px; }
+  .pick .art-emoji { font-size: 92px; line-height: 1; }
+  .pick-grid.cols-3 .pick .art-emoji { font-size: 54px; }
+  .pick .art svg { height: 100%; width: auto; }
+  .pick .swatch { height: 86%; aspect-ratio: 1; border-radius: 50%; border: 3px solid rgba(0,0,0,.18); }
+  .pick .check {
+    position: absolute; top: -12px; right: -12px; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-size: 1.4rem; display: none;
+    align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,.25);
+  }
+  .pick[aria-pressed="true"] .check { display: flex; animation: pop .25s both; }
+  button.go {
+    font-size: 1.7rem; padding: 16px 52px;
+    background: linear-gradient(180deg, #ff8a3d, #e8452a); color: #fff;
+    box-shadow: 0 6px 0 #a8321d, 0 10px 20px rgba(232,69,42,.3);
+  }
+  button.link { background: none; box-shadow: none; color: var(--muted); font-size: 1rem; padding: 6px 10px; font-weight: normal; text-decoration: underline; }
+  .summary { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 8px 0; align-items: center; min-height: 10px; }
+  .summary .chip-art { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; font-size: 52px; animation: pop .4s both; }
+  .summary .chip-art svg { height: 100%; }
+  .dot { display: inline-block; width: 1em; height: 1em; border-radius: 50%; border: 2px solid rgba(0,0,0,.15); vertical-align: -0.15em; }
+  .summary .dot { width: 44px; height: 44px; animation: pop .4s both; }
   @keyframes bounce-in { 0% { transform: scale(0) rotate(-30deg) } 100% { transform: scale(1) rotate(0) } }
   @keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
   @keyframes pop { 0% { opacity: 0; transform: scale(.6) } 100% { opacity: 1; transform: scale(1) } }
@@ -144,6 +190,10 @@
   .history .day { min-width: 84px; color: var(--muted); font-size: .9rem; }
   .history .what { flex: 1; }
   .history .fruit { display: block; color: var(--muted); font-size: .85rem; }
+  .kid-picks { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .kid-picks p { margin: 4px 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips span { background: var(--bg); border: 2px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: .95rem; }
 
   /* Menu editor */
   details.meal { border: 2px solid var(--border); border-radius: 12px; margin-bottom: 10px; }
@@ -202,6 +252,7 @@
       <h2 id="meal-name"></h2>
       <div id="meal-heavy"></div>
       <ul id="meal-plate"></ul>
+      <div id="kid-picks" class="kid-picks hidden"></div>
       <p id="meal-tip" class="note"></p>
       <div class="controls" style="margin-bottom:0">
         <button id="lock" class="secondary">✅ We're having this!</button>
@@ -227,6 +278,10 @@
       <h3>Last 7 days</h3>
       <ul id="history-counts"></ul>
       <p id="history-counts-empty" class="note">No breakfasts logged this past week.</p>
+      <div id="history-feelings-wrap" class="hidden">
+        <h3 style="margin-top:16px">How we felt</h3>
+        <div id="history-feelings" class="chips"></div>
+      </div>
     </div>
     <div class="controls" style="margin-top:0">
       <button id="clear-history" class="secondary danger">Clear all history</button>
@@ -245,7 +300,8 @@
     </div>
     <div class="card">
       <h3>Fruits</h3>
-      <p class="note" style="margin-top:0">One per line. A random one is added to every breakfast.</p>
+      <p class="note" style="margin-top:0">One per line. After each spin your little one picks from these
+        (start a line with an emoji to give it a picture). If they skip, a random one is suggested.</p>
       <textarea id="fruit-editor" rows="8"></textarea>
     </div>
 
@@ -289,11 +345,35 @@
     </div>
   </section>
 
-  <div id="celebrate" class="overlay hidden" role="dialog" aria-live="assertive">
-    <div class="big-emoji" id="big-emoji"></div>
-    <div class="big-name" id="big-name"></div>
-    <div class="yay">Yay! 🎉</div>
-    <p class="note">Tap anywhere to see the plate</p>
+  <div id="kid" class="overlay hidden" role="dialog" aria-modal="true" aria-live="assertive">
+    <div class="kid-inner">
+      <div class="kid-top">
+        <div class="dots" id="kid-dots"></div>
+        <button id="kid-skip" class="link" type="button">Skip</button>
+      </div>
+
+      <div id="kid-meal">
+        <div class="big-emoji" id="big-emoji"></div>
+        <div class="big-name" id="big-name"></div>
+        <div class="yay">Yay! 🎉</div>
+      </div>
+
+      <div id="kid-pick" class="hidden" style="width:100%">
+        <h2 class="kid-title" id="kid-title"></h2>
+        <p class="kid-sub">Tap as many as you like!</p>
+        <div class="pick-grid" id="kid-grid"></div>
+      </div>
+
+      <div id="kid-done" class="hidden">
+        <div class="big-emoji" id="done-emoji"></div>
+        <h2 class="kid-title">Yummy! Let's eat!</h2>
+        <div class="summary" id="done-summary"></div>
+      </div>
+
+      <div class="controls">
+        <button id="kid-next" class="go" type="button">Next ➜</button>
+      </div>
+    </div>
   </div>
   <canvas id="confetti"></canvas>
 
@@ -338,9 +418,41 @@
     }
   ];
 
-  const DEFAULT_FRUITS = [
+  // Lines without an emoji get a drawn picture when we know the fruit (raspberries, blackberries).
+  const DEFAULT_FRUITS = ["🫐 Blueberries", "Blackberries", "🍌 Bananas", "Raspberries"];
+  const OLD_DEFAULT_FRUITS = [
     "🍓 Strawberries", "🫐 Blueberries", "🍌 Banana", "🍎 Apple slices", "🍊 Clementine / orange",
     "🍉 Watermelon", "🍈 Cantaloupe", "🥝 Kiwi", "🍇 Grapes (cut for little ones)", "🍐 Pear", "🍑 Peaches", "🥭 Mango"
+  ];
+
+  const COLORS = [
+    { id: "red", name: "Red", css: "#e53935" },
+    { id: "orange", name: "Orange", css: "#fb8c00" },
+    { id: "yellow", name: "Yellow", css: "#fdd835" },
+    { id: "green", name: "Green", css: "#43a047" },
+    { id: "blue", name: "Blue", css: "#1e88e5" },
+    { id: "purple", name: "Purple", css: "#8e24aa" },
+    { id: "pink", name: "Pink", css: "#f48fb1" },
+    { id: "brown", name: "Brown", css: "#8d6e63" },
+    { id: "black", name: "Black", css: "#212121" },
+    { id: "white", name: "White", css: "#ffffff" },
+    { id: "gray", name: "Gray", css: "#9e9e9e" },
+    { id: "rainbow", name: "Rainbow", css: "conic-gradient(#e53935, #fb8c00, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935)" }
+  ];
+
+  const FEELINGS = [
+    { id: "happy", name: "Happy", emoji: "😊" },
+    { id: "excited", name: "Excited", emoji: "🤩" },
+    { id: "silly", name: "Silly", emoji: "🤪" },
+    { id: "loved", name: "Loved", emoji: "🥰" },
+    { id: "proud", name: "Proud", emoji: "😎" },
+    { id: "calm", name: "Calm", emoji: "😌" },
+    { id: "sleepy", name: "Sleepy", emoji: "😴" },
+    { id: "hungry", name: "Hungry", emoji: "😋" },
+    { id: "shy", name: "Shy", emoji: "🙈" },
+    { id: "sad", name: "Sad", emoji: "😢" },
+    { id: "mad", name: "Mad", emoji: "😠" },
+    { id: "scared", name: "Scared", emoji: "😨" }
   ];
 
   const PALETTE = ["#ffbe3d", "#ff8c42", "#a0d468", "#ffe14d", "#c39bd3", "#5dade2", "#ff6b9d", "#48c9b0", "#f1948a", "#85c1e9"];
@@ -372,14 +484,17 @@
   const state = {
     meals: load(KEYS.meals, clone(DEFAULT_MEALS)),
     fruits: load(KEYS.fruits, DEFAULT_FRUITS.slice()),
-    history: load(KEYS.history, []), // [{id, date: "YYYY-MM-DD", mealId, name, emoji, fruit}]
+    // [{id, date: "YYYY-MM-DD", mealId, name, emoji, fruit, fruits?, colors?, feelings?}]
+    history: load(KEYS.history, []),
     updatedAt: load(KEYS.updatedAt, 0)
   };
   normalize(state);
 
   function normalize(s) {
     if (!Array.isArray(s.meals) || !s.meals.length) s.meals = clone(DEFAULT_MEALS);
-    if (!Array.isArray(s.fruits)) s.fruits = DEFAULT_FRUITS.slice();
+    if (!Array.isArray(s.fruits) || JSON.stringify(s.fruits) === JSON.stringify(OLD_DEFAULT_FRUITS)) {
+      s.fruits = DEFAULT_FRUITS.slice();
+    }
     if (!Array.isArray(s.history)) s.history = [];
     s.meals.forEach(m => { m.id = m.id || newId(); m.plate = Array.isArray(m.plate) ? m.plate : []; });
     s.history.forEach(h => { h.id = h.id || newId(); });
@@ -498,7 +613,7 @@
   let rotation = 0;
   let spinning = false;
   let lightPhase = 0;
-  let current = null; // { meal, fruit }
+  let current = null; // { meal, fruit, picks: { fruit: [], colors: [], feelings: [] } }
 
   function fitText(text, maxWidth, startPx, minPx) {
     let px = startPx;
@@ -643,39 +758,248 @@
 
   function showResult(meal) {
     const fruit = state.fruits.length ? state.fruits[Math.floor(Math.random() * state.fruits.length)] : "";
-    current = { meal, fruit };
+    current = { meal, fruit, picks: { fruit: [], colors: [], feelings: [] } };
 
-    // Big celebration for the little ones
+    // Big celebration for the little ones, then their turn to pick
     document.getElementById("big-emoji").textContent = meal.emoji || "🍽️";
     document.getElementById("big-name").textContent = meal.name;
-    document.getElementById("celebrate").classList.remove("hidden");
+    kidStep = 0;
+    renderKidStep();
+    document.getElementById("kid").classList.remove("hidden");
     confetti();
     fanfare();
     setTimeout(() => say(meal.name), 700);
     try { navigator.vibrate && navigator.vibrate([80, 60, 120]); } catch (e) {}
 
-    // Details for the grown-ups
-    document.getElementById("meal-name").textContent = (meal.emoji ? meal.emoji + " " : "") + meal.name;
-    document.getElementById("meal-heavy").innerHTML = meal.heavy
-      ? '<span class="note">Heavier meal</span><span class="tag">balance it out</span>' : "";
-    const plate = document.getElementById("meal-plate");
-    plate.innerHTML = "";
-    [...meal.plate, ...(fruit ? ["Fruit: " + fruit] : [])].forEach(item => {
-      const li = document.createElement("li");
-      li.textContent = item;
-      plate.appendChild(li);
-    });
-    document.getElementById("meal-tip").textContent = meal.tip ? "💡 " + meal.tip : "";
+    renderPlate();
     const lock = document.getElementById("lock");
     lock.disabled = false;
     lock.textContent = "✅ We're having this!";
     document.getElementById("result").classList.remove("hidden");
   }
 
-  document.getElementById("celebrate").addEventListener("click", () => {
-    document.getElementById("celebrate").classList.add("hidden");
+  // Details for the grown-ups
+  function renderPlate() {
+    if (!current) return;
+    const { meal, fruit, picks } = current;
+    document.getElementById("meal-name").textContent = (meal.emoji ? meal.emoji + " " : "") + meal.name;
+    document.getElementById("meal-heavy").innerHTML = meal.heavy
+      ? '<span class="note">Heavier meal</span><span class="tag">balance it out</span>' : "";
+    const plate = document.getElementById("meal-plate");
+    plate.innerHTML = "";
+    const fruitLine = picks.fruit.length ? "Fruit: " + picks.fruit.join(", ") + " ⭐ their pick!" : fruit ? "Fruit: " + fruit : "";
+    [...meal.plate, ...(fruitLine ? [fruitLine] : [])].forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      plate.appendChild(li);
+    });
+    renderKidPicks(document.getElementById("kid-picks"), picks);
+    document.getElementById("meal-tip").textContent = meal.tip ? "💡 " + meal.tip : "";
+  }
+
+  // Favorite colors + feelings as a small block (used on the plate card and in history).
+  function renderKidPicks(el, picks) {
+    el.innerHTML = "";
+    const colors = (picks.colors || []).map(id => COLORS.find(c => c.id === id)).filter(Boolean);
+    const feelings = (picks.feelings || []).map(id => FEELINGS.find(f => f.id === id)).filter(Boolean);
+    if (colors.length) {
+      const p = document.createElement("p");
+      p.append("Favorite colors: ");
+      colors.forEach((c, i) => {
+        const d = document.createElement("span");
+        d.className = "dot";
+        d.style.background = c.css;
+        d.title = c.name;
+        p.append(d, " " + c.name + (i < colors.length - 1 ? ", " : ""));
+      });
+      el.appendChild(p);
+    }
+    if (feelings.length) {
+      const p = document.createElement("p");
+      p.textContent = "Feeling: " + feelings.map(f => f.emoji + " " + f.name).join(", ");
+      el.appendChild(p);
+    }
+    el.classList.toggle("hidden", !colors.length && !feelings.length);
+  }
+
+  // ---------- little one's turn: fruit, colors, feelings ----------
+  // "🫐 Blueberries" -> { emoji: "🫐", name: "Blueberries" }; "Raspberries" -> { emoji: "", name: "Raspberries" }
+  function splitLabel(text) {
+    const m = text.match(/^([^\p{L}\p{N}]+?)\s+(.+)$/u);
+    return m ? { emoji: m[1], name: m[2] } : { emoji: "", name: text };
+  }
+
+  function berrySVG(fill, shine) {
+    const rows = [[32, 50, 68], [23, 41, 59, 77], [32, 50, 68], [41, 59], [50]];
+    let dots = "";
+    rows.forEach((xs, r) => xs.forEach(x => {
+      const y = 36 + r * 14;
+      dots += `<circle cx="${x}" cy="${y}" r="10.5" fill="${fill}"/><circle cx="${x - 3.5}" cy="${y - 3.5}" r="3" fill="${shine}" opacity=".75"/>`;
+    }));
+    return `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 30 L34 14 L46 22 L50 8 L54 22 L66 14 Z" fill="#4caf50" stroke="#2e7d32" stroke-width="2" stroke-linejoin="round"/>${dots}</svg>`;
+  }
+
+  // The picture for a fruit line: its emoji, a drawn berry, or a plate.
+  function fruitArt(text) {
+    const { emoji, name } = splitLabel(text);
+    const n = name.toLowerCase();
+    if (emoji) {
+      const span = document.createElement("span");
+      span.className = "art-emoji";
+      span.textContent = emoji;
+      return span;
+    }
+    const wrap = document.createElement("span");
+    wrap.style.height = "100%";
+    wrap.style.display = "flex";
+    if (n.includes("raspberr")) wrap.innerHTML = berrySVG("#e0245e", "#ffb3c8");
+    else if (n.includes("blackberr")) wrap.innerHTML = berrySVG("#3a1d4d", "#a58cc0");
+    else if (n.includes("blueberr")) wrap.innerHTML = berrySVG("#3f51b5", "#c5cae9");
+    else { wrap.className = "art-emoji"; wrap.textContent = "🍽️"; }
+    return wrap;
+  }
+
+  const KID_STEPS = [
+    { key: "meal" },
+    {
+      key: "fruit", title: "What fruit do you want?", cols: 2,
+      options: () => state.fruits.map(f => ({ id: f, name: splitLabel(f).name, art: () => fruitArt(f) }))
+    },
+    {
+      key: "colors", title: "What are your favorite colors?", cols: 3,
+      options: () => COLORS.map(c => ({
+        id: c.id, name: c.name,
+        art: () => { const d = document.createElement("span"); d.className = "swatch"; d.style.background = c.css; return d; }
+      }))
+    },
+    {
+      key: "feelings", title: "How are you feeling?", cols: 3,
+      options: () => FEELINGS.map(f => ({
+        id: f.id, name: f.name,
+        art: () => { const d = document.createElement("span"); d.className = "art-emoji"; d.textContent = f.emoji; return d; }
+      }))
+    },
+    { key: "done" }
+  ];
+  let kidStep = 0;
+
+  function activeKidSteps() {
+    return KID_STEPS.filter(st => st.key !== "fruit" || state.fruits.length);
+  }
+
+  function popSound(on) {
+    if (on) { tone(660, 0.09, "sine", 0.18); tone(990, 0.12, "sine", 0.15, 0.07); }
+    else tone(440, 0.1, "sine", 0.12);
+  }
+
+  function renderKidStep() {
+    const steps = activeKidSteps();
+    const st = steps[kidStep];
+    const dots = document.getElementById("kid-dots");
+    dots.innerHTML = "";
+    steps.forEach((_, i) => {
+      const d = document.createElement("span");
+      if (i === kidStep) d.className = "on";
+      else if (i < kidStep) d.className = "done";
+      dots.appendChild(d);
+    });
+    document.getElementById("kid-meal").classList.toggle("hidden", st.key !== "meal");
+    document.getElementById("kid-pick").classList.toggle("hidden", !st.options);
+    document.getElementById("kid-done").classList.toggle("hidden", st.key !== "done");
+    document.getElementById("kid-skip").classList.toggle("hidden", st.key === "done");
+    const next = document.getElementById("kid-next");
+    const isLastPick = steps[kidStep + 1] && steps[kidStep + 1].key === "done";
+    next.textContent = st.key === "done" ? "Let's eat! 😋" : isLastPick ? "All done ➜" : "Next ➜";
+
+    if (st.options) {
+      document.getElementById("kid-title").textContent = st.title;
+      const grid = document.getElementById("kid-grid");
+      grid.className = "pick-grid" + (st.cols === 3 ? " cols-3" : "");
+      grid.innerHTML = "";
+      const chosen = current.picks[st.key];
+      st.options().forEach(opt => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "pick";
+        b.setAttribute("aria-pressed", String(chosen.includes(opt.id)));
+        const art = document.createElement("span");
+        art.className = "art";
+        art.appendChild(opt.art());
+        const label = document.createElement("span");
+        label.textContent = opt.name;
+        const check = document.createElement("span");
+        check.className = "check";
+        check.textContent = "✓";
+        b.append(art, label, check);
+        b.addEventListener("click", () => {
+          const i = chosen.indexOf(opt.id);
+          const on = i < 0;
+          if (on) chosen.push(opt.id); else chosen.splice(i, 1);
+          b.setAttribute("aria-pressed", String(on));
+          b.classList.remove("boing");
+          void b.offsetWidth;
+          if (on) b.classList.add("boing");
+          popSound(on);
+          if (on) say(opt.name);
+        });
+        grid.appendChild(b);
+      });
+      say(st.title);
+    }
+
+    if (st.key === "done") {
+      document.getElementById("done-emoji").textContent = current.meal.emoji || "🍽️";
+      const sum = document.getElementById("done-summary");
+      sum.innerHTML = "";
+      let delay = 0;
+      const add = el => { el.style.animationDelay = (delay += 0.08) + "s"; sum.appendChild(el); };
+      current.picks.fruit.forEach(f => {
+        const c = document.createElement("span");
+        c.className = "chip-art";
+        c.title = splitLabel(f).name;
+        c.appendChild(fruitArt(f));
+        add(c);
+      });
+      current.picks.colors.forEach(id => {
+        const col = COLORS.find(c => c.id === id);
+        if (!col) return;
+        const d = document.createElement("span");
+        d.className = "dot";
+        d.title = col.name;
+        d.style.background = col.css;
+        add(d);
+      });
+      current.picks.feelings.forEach(id => {
+        const f = FEELINGS.find(x => x.id === id);
+        if (!f) return;
+        const c = document.createElement("span");
+        c.className = "chip-art";
+        c.title = f.name;
+        c.textContent = f.emoji;
+        add(c);
+      });
+      confetti();
+      fanfare();
+      setTimeout(() => say("Yummy! Let's eat!"), 500);
+    }
+    document.getElementById("kid").scrollTop = 0;
+  }
+
+  function closeKid() {
+    document.getElementById("kid").classList.add("hidden");
+    try { speechSynthesis.cancel(); } catch (e) {}
+    renderPlate();
     document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  document.getElementById("kid-next").addEventListener("click", () => {
+    if (!current) return closeKid();
+    if (kidStep >= activeKidSteps().length - 1) return closeKid();
+    kidStep++;
+    tone(880, 0.08, "triangle", 0.12);
+    renderKidStep();
   });
+  document.getElementById("kid-skip").addEventListener("click", closeKid);
 
   // ---------- confetti ----------
   function confetti() {
@@ -728,8 +1052,12 @@
 
   function lockIn() {
     if (!current) return;
-    const { meal, fruit } = current;
-    const entry = { id: newId(), date: ymd(new Date()), mealId: meal.id, name: meal.name, emoji: meal.emoji, fruit };
+    const { meal, fruit, picks } = current;
+    const entry = {
+      id: newId(), date: ymd(new Date()), mealId: meal.id, name: meal.name, emoji: meal.emoji,
+      fruit: picks.fruit.length ? picks.fruit.join(", ") : fruit,
+      fruits: picks.fruit.slice(), colors: picks.colors.slice(), feelings: picks.feelings.slice()
+    };
     change(s => { if (!s.history.some(h => h.id === entry.id)) s.history.push(entry); });
     const lock = document.getElementById("lock");
     lock.disabled = true;
@@ -772,6 +1100,23 @@
         f.textContent = "with " + h.fruit;
         what.appendChild(f);
       }
+      if ((h.colors && h.colors.length) || (h.feelings && h.feelings.length)) {
+        const extra = document.createElement("span");
+        extra.className = "fruit";
+        (h.colors || []).forEach(id => {
+          const c = COLORS.find(x => x.id === id);
+          if (!c) return;
+          const d = document.createElement("span");
+          d.className = "dot";
+          d.title = c.name;
+          d.style.background = c.css;
+          d.style.marginRight = "3px";
+          extra.appendChild(d);
+        });
+        const feel = (h.feelings || []).map(id => FEELINGS.find(x => x.id === id)).filter(Boolean);
+        if (feel.length) extra.append(" feeling " + feel.map(f => f.emoji + " " + f.name).join(", "));
+        what.appendChild(extra);
+      }
       const del = document.createElement("button");
       del.className = "icon";
       del.title = "Remove this entry";
@@ -794,6 +1139,19 @@
     cl.innerHTML = "";
     const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
     document.getElementById("history-counts-empty").classList.toggle("hidden", rows.length > 0);
+    const feelCounts = {};
+    state.history.filter(h => daysAgo(h.date) < 7).forEach(h =>
+      (h.feelings || []).forEach(id => { feelCounts[id] = (feelCounts[id] || 0) + 1; }));
+    const fc = document.getElementById("history-feelings");
+    fc.innerHTML = "";
+    Object.entries(feelCounts).sort((a, b) => b[1] - a[1]).forEach(([id, n]) => {
+      const f = FEELINGS.find(x => x.id === id);
+      if (!f) return;
+      const chip = document.createElement("span");
+      chip.textContent = f.emoji + " " + f.name + " × " + n;
+      fc.appendChild(chip);
+    });
+    document.getElementById("history-feelings-wrap").classList.toggle("hidden", !fc.children.length);
     rows.forEach(([k, n]) => {
       const li = document.createElement("li");
       li.textContent = k + " — " + n + (n === 1 ? " time" : " times");
@@ -1086,7 +1444,7 @@
   function renderSync() {
     const pill = document.getElementById("sync-pill");
     const labels = {
-      local: "📱 This device only",
+      local: "📱 Not synced",
       syncing: "☁️ Syncing…",
       ok: "☁️ Synced",
       error: "⚠️ Offline"
