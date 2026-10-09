@@ -11,13 +11,19 @@ Live at https://uxandyphil.github.io/kids-breakfast/ (or open `index.html` in an
   or just tap the wheel.
 - When it stops: confetti, a fanfare, the breakfast's picture bouncing on screen, and the name read out loud.
   Tap 🔊 in the top corner to mute.
-- Tap anywhere to close the celebration and see the balanced plate (a random fruit, a protein, and tips;
-  heavier meals get a "balance it out" tag).
+- Then it's your little one's turn, with big picture cards (tap as many as they like — each one is read aloud):
+  1. **What fruit do you want?** — Blueberries, Blackberries, Bananas, Raspberries (edit the list in the Menu tab)
+  2. **What are your favorite colors?** — 12 colors including Rainbow
+  3. **How are you feeling?** — 12 feelings: Happy, Excited, Silly, Loved, Proud, Calm, Sleepy, Hungry, Shy, Sad, Mad, Scared
+  4. **Yummy! Let's eat!** — shows everything they picked. ("Skip" in the corner jumps straight to the plate.)
+- The plate card below shows the balanced meal with their fruit pick (or a random fruit if skipped), their
+  colors and feelings, plus tips. Heavier meals get a "balance it out" tag.
 - Tap **"We're having this!"** to log it. Breakfasts marked **once a week** (like Go out to DK) are
   greyed out with a 🔒 once they've been logged that week (Monday–Sunday).
 
 ### History tab
-- What you've had recently plus a count for the last 7 days. Tap ✕ to remove a mistake
+- What you've had recently (with the fruit, colors, and feelings picked) plus a count for the last 7 days
+  and a "How we felt" summary. Tap ✕ to remove a mistake
   (removing this week's DK entry unlocks DK again).
 
 ### Menu tab
