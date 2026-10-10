@@ -12,6 +12,8 @@ so the Home screen becomes "today at a glance". Picks reset each new day and are
 
 - **🎡 Spin for breakfast** — opens the wheel: big pictures, flashing lights, a clicking pointer, then confetti,
   a fanfare, and the breakfast read out loud. The last spin of the day is today's breakfast.
+- **☀️ Morning jobs** — a checklist: Eat breakfast, Go potty, Get dressed, Brush teeth. Each tap is saved right
+  away ("Yay! You brushed your teeth!"), the tile shows how many are done, and finishing all four gets confetti
 - **🍓 Fruit** — Blueberries, Blackberries, Bananas, Raspberries (edit the list in the Menu tab)
 - **😊 Feelings** — 12 feelings: Happy, Excited, Silly, Loved, Proud, Calm, Sleepy, Hungry, Shy, Sad, Mad, Scared
 - **🎨 Colors** — 12 colors including Rainbow
@@ -23,7 +25,8 @@ so the Home screen becomes "today at a glance". Picks reset each new day and are
 - **🎃 Halloween** — how many days until Halloween, with one pumpkin per day to count
 
 Every question is multi-select with big cards that bounce and are read aloud. **Done** only works once at least
-one picture is chosen (otherwise the cards wiggle and it says "Tap a picture first!"). The 🏠 button goes back
+one picture is chosen (otherwise the cards wiggle and it says "Tap a picture first!"). The button stays pinned
+to the bottom of the screen, even on long lists like the animals. The 🏠 button goes back
 home without saving. The page behind a dialog can't be scrolled. Tap 🔊 in the top corner to mute.
 
 Taps are toddler-proof: a wobbly finger still counts as a tap, and holding a picture for about half a second
