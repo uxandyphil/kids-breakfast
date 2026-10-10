@@ -74,3 +74,18 @@ Notes:
 - Devices check for changes every 15 seconds and whenever the app is reopened. If a device is offline,
   its changes are saved locally and sent when it reconnects.
 - Never use the `service_role` / secret key in the app — only the publishable/anon key.
+
+## Fridge, TV, and older browsers
+
+The app is tuned to run on a Samsung Family Hub fridge (Tizen browser) and other older or slower browsers:
+
+- The script uses only widely supported JavaScript (no `async`/`await`, no newer regex features), so an
+  older browser can't choke on a single line and leave a blank screen.
+- CSS has fallbacks for features older browsers lack (`aspect-ratio`, `min()`/`clamp()`, flexbox `gap`,
+  conic gradients, `dvh`).
+- On big landscape screens (900px and wider) Home shows 4 tiles across and pickers show up to 6 cards per row.
+- On fridges/TVs (detected from the browser), slow devices, or with "reduce motion" on, endless animations
+  are turned off and confetti is lighter. Add `?fridge=1` to the address once to force this mode on a device
+  (`?fridge=0` turns it off).
+- Because a fridge screen is always on, the app checks every minute for a new day (fresh tiles, new greeting,
+  Halloween countdown) and refreshes the weather every 30 minutes.
