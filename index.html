@@ -147,6 +147,9 @@
   }
   .tile.wide { grid-column: span 2; min-height: 110px; flex-direction: row; gap: 14px; }
   .tile.wide .tile-label { font-size: 1.4rem; }
+  .tile.wide.stack { flex-direction: column; gap: 4px; }
+  .tile.stack .tile-picks { flex-wrap: nowrap; gap: 14px; min-height: 52px; }
+  .tile.stack .mini { width: 52px; height: 52px; font-size: 44px; }
   .subhead { width: min(100%, 460px); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   button.round {
     width: 56px; height: 56px; padding: 0; border-radius: 50%; font-size: 1.7rem; flex: none;
@@ -154,14 +157,19 @@
   }
 
   /* Full-screen kid dialogs (spin result, pickers, Halloween) */
+  /* Three rows: 🏠 at the top, the cards scroll in the middle, and the big button is pinned to the bottom
+     of the *visible* screen (dvh / innerHeight), so it never ends up below a long list or the browser toolbar. */
   .overlay {
-    position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
-    align-items: center; text-align: center; padding: 16px 16px 0; overflow-y: auto;
-    overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100dvh; z-index: 10;
+    display: flex; flex-direction: column; text-align: center; overflow: hidden;
     background: var(--bg);
   }
-  .kid-inner { margin: auto 0; padding-top: 64px; width: min(100%, 520px); display: flex; flex-direction: column; align-items: center; }
-  .kid-top { position: sticky; top: 0; z-index: 2; align-self: stretch; display: flex; justify-content: flex-start; height: 0; overflow: visible; }
+  .kid-top { flex: none; display: flex; justify-content: flex-start; padding: 12px 16px 4px; }
+  .kid-scroll {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: column; align-items: center; padding: 0 16px 12px;
+  }
+  .kid-inner { margin: auto 0; width: min(100%, 520px); display: flex; flex-direction: column; align-items: center; }
   .overlay .big-emoji { font-size: min(48vw, 220px); line-height: 1.1; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both, float 1.4s ease-in-out .7s infinite; }
   .overlay .big-name { font-size: clamp(2rem, 10vw, 3.2rem); font-weight: bold; margin-top: 8px; animation: pop .5s .25s both; }
   .overlay .yay { font-size: 1.6rem; margin-top: 6px; animation: pop .5s .45s both; }
@@ -201,8 +209,9 @@
   }
   .pick[aria-pressed="true"] .check { display: flex; animation: pop .25s both; }
   .kid-actions {
-    position: sticky; bottom: 0; width: calc(100% + 32px); margin: 8px -16px 0; padding: 14px 16px 22px;
-    display: flex; justify-content: center; background: linear-gradient(to top, var(--bg) 75%, transparent);
+    flex: none; display: flex; justify-content: center;
+    padding: 12px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg); box-shadow: 0 -6px 16px rgba(0,0,0,.08);
   }
   button.go {
     font-size: 1.7rem; padding: 16px 52px;
@@ -393,6 +402,7 @@
     <div class="kid-top">
       <button id="kid-close" class="round" type="button" aria-label="Back home">🏠</button>
     </div>
+    <div class="kid-scroll" id="kid-scroll">
     <div class="kid-inner">
 
       <div id="kid-meal" class="hidden">
@@ -413,9 +423,10 @@
         <div class="pumpkins" id="hw-pumpkins"></div>
       </div>
 
-      <div class="kid-actions">
-        <button id="kid-done" class="go" type="button">Done ✓</button>
-      </div>
+    </div>
+    </div>
+    <div class="kid-actions">
+      <button id="kid-done" class="go" type="button">Done ✓</button>
     </div>
   </div>
   <canvas id="confetti"></canvas>
@@ -1124,7 +1135,19 @@
     ["robot", "Robot Monster", "🤖"]
   ].map(([id, name, emoji]) => ({ id, name, emoji }));
 
+  const MORNING = [
+    { id: "breakfast", name: "Eat breakfast", emoji: "🥣", cheer: "You ate breakfast!" },
+    { id: "potty", name: "Go potty", emoji: "🚽", cheer: "You went potty!" },
+    { id: "dressed", name: "Get dressed", emoji: "👕", cheer: "You got dressed!" },
+    { id: "teeth", name: "Brush teeth", emoji: "🪥", cheer: "You brushed your teeth!" }
+  ];
+
   const QUESTIONS = {
+    // A checklist: each tap saves right away, and finishing all of them gets a big celebration.
+    morning: {
+      label: "Morning", icon: "☀️", tile: "#fff1b8", cols: 2, title: "Morning jobs!", checklist: true,
+      sub: "Tap each one when you've done it!", options: () => MORNING
+    },
     fruit: {
       label: "Fruit", icon: "🍓", tile: "#ffe0e6", cols: 2, title: "What fruit do you want?",
       options: () => state.fruits.map(f => ({ id: f, name: splitLabel(f).name, fruit: f }))
@@ -1135,7 +1158,7 @@
     animals: { label: "Animal", icon: "🐶", tile: "#ffeedd", cols: 3, title: "What's your favorite animal today?", options: () => ANIMALS },
     monsters: { label: "Monster", icon: "👾", tile: "#ece4fb", cols: 3, title: "What's your favorite monster today?", options: () => MONSTERS }
   };
-  const TILE_ORDER = ["breakfast", "fruit", "feelings", "colors", "walk", "animals", "monsters", "halloween"];
+  const TILE_ORDER = ["breakfast", "morning", "fruit", "feelings", "colors", "walk", "animals", "monsters", "halloween"];
 
   // Find the option for a saved pick (fruits are saved as their text, so they still draw if the list changes).
   function findOption(key, id) {
@@ -1198,6 +1221,23 @@
         label.textContent = n === 0 ? "It's Halloween!" : n + (n === 1 ? " day" : " days") + " to Halloween";
         b.append(icon, label);
         b.addEventListener("click", openHalloween);
+      } else if (key === "morning") {
+        // Wide tile: all four jobs in a row, faded until they're done.
+        const doneIds = picks.morning || [];
+        const all = doneIds.length >= MORNING.length;
+        b.classList.add("wide", "stack");
+        b.style.setProperty("--tile", QUESTIONS.morning.tile);
+        if (all) b.classList.add("done");
+        const row = document.createElement("span");
+        row.className = "tile-picks";
+        MORNING.forEach(t => {
+          const m = miniArt(t);
+          if (!doneIds.includes(t.id)) m.style.opacity = ".3";
+          row.appendChild(m);
+        });
+        label.textContent = all ? "Morning all done!" : "Morning jobs: " + doneIds.length + " of " + MORNING.length;
+        b.append(row, label);
+        b.addEventListener("click", () => openPicker("morning"));
       } else {
         const q = QUESTIONS[key];
         const chosen = (picks[key] || []).map(id => findOption(key, id)).filter(Boolean);
@@ -1288,13 +1328,22 @@
     ["meal", "pick", "halloween"].forEach(m =>
       document.getElementById("kid-" + m).classList.toggle("hidden", m !== mode));
     const done = document.getElementById("kid-done");
-    done.textContent = mode === "pick" ? "Done ✓" : "Yay! 🏠";
-    done.classList.toggle("waiting", mode === "pick" && !pickSel.length);
+    const checklist = mode === "pick" && QUESTIONS[pickKey].checklist;
+    done.textContent = mode === "pick" && !checklist ? "Done ✓" : "Yay! 🏠";
+    done.classList.toggle("waiting", mode === "pick" && !checklist && !pickSel.length);
     const ov = document.getElementById("kid");
     ov.classList.remove("hidden");
-    ov.scrollTop = 0;
+    fitOverlay();
+    document.getElementById("kid-scroll").scrollTop = 0;
     lockScroll();
   }
+
+  // Older phones don't know "dvh": size the dialog to the part of the screen you can actually see.
+  function fitOverlay() {
+    const ov = document.getElementById("kid");
+    if (!ov.classList.contains("hidden")) ov.style.height = window.innerHeight + "px";
+  }
+  window.addEventListener("resize", fitOverlay);
 
   function closeOverlay() {
     const wasMode = overlayMode;
@@ -1317,6 +1366,7 @@
     pickKey = key;
     pickSel = (picksFor(todayKey())[key] || []).filter(id => options.some(o => o.id === id));
     document.getElementById("kid-title").textContent = q.title;
+    document.getElementById("kid-sub").textContent = q.sub || "Tap as many as you like!";
     const grid = document.getElementById("kid-grid");
     grid.className = "pick-grid" + (q.cols === 3 ? " cols-3" : "");
     grid.innerHTML = "";
@@ -1343,6 +1393,20 @@
         void b.offsetWidth;
         if (on) b.classList.add("boing");
         popSound(on);
+        if (q.checklist) {
+          // Save each job as soon as it's tapped.
+          const date = todayKey(), sel = pickSel.slice();
+          change(s => {
+            s.days[date] = Object.assign({}, s.days[date]);
+            s.days[date][key] = sel.slice();
+          });
+          if (on && pickSel.length === options.length) {
+            confetti();
+            fanfare();
+            setTimeout(() => say("Yay! All done! You did your whole morning!"), 500);
+          } else if (on) say("Yay! " + opt.cheer);
+          return;
+        }
         if (on) {
           if (opt.noise) animalNoise(opt);
           else say(opt.name);
@@ -1356,6 +1420,7 @@
   }
 
   function savePicks() {
+    if (QUESTIONS[pickKey].checklist) return closeOverlay(); // already saved as each job was tapped
     if (!pickSel.length) {
       // Nothing chosen yet: wiggle the cards and ask again instead of moving on.
       const grid = document.getElementById("kid-grid");
