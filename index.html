@@ -44,8 +44,8 @@
     min-height: 100vh;
     -webkit-tap-highlight-color: transparent;
   }
-  header { width: min(100%, 460px); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  h1 { margin: 4px 0; font-size: clamp(1.1rem, 5.2vw, 1.7rem); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  header { width: 100%; max-width: 460px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  h1 { margin: 4px 0; font-size: 1.5rem; font-size: clamp(1.1rem, 5.2vw, 1.7rem); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   header > div { flex: none; }
   .pill {
     font-size: .8rem; padding: 4px 10px; border-radius: 999px; border: 2px solid var(--border);
@@ -65,8 +65,9 @@
   .panel { width: 100%; display: flex; flex-direction: column; align-items: center; }
 
   /* Wheel */
-  .wheel-wrap { position: relative; width: min(94vw, 460px); aspect-ratio: 1; cursor: pointer; touch-action: manipulation; }
-  canvas#wheel { width: 100%; height: 100%; display: block; }
+  /* The canvas keeps itself square (900×900), so no aspect-ratio needed — older browsers lack it. */
+  .wheel-wrap { position: relative; width: 94vw; max-width: 460px; cursor: pointer; touch-action: manipulation; }
+  canvas#wheel { width: 100%; height: auto; display: block; }
   .pointer {
     position: absolute; top: -14px; left: 50%; width: 56px; height: 64px; margin-left: -28px;
     z-index: 2; transform-origin: 50% 20%; pointer-events: none;
@@ -105,7 +106,7 @@
   .controls { margin: 20px 0; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   .card {
     background: var(--card); border: 2px solid var(--border); border-radius: 16px;
-    padding: 16px 20px; width: min(100%, 460px); margin-bottom: 16px;
+    padding: 16px 20px; width: 100%; max-width: 460px; margin-bottom: 16px;
   }
   .card h2 { margin: 0 0 8px; font-size: 1.5rem; }
   .card h3 { margin: 0 0 8px; font-size: 1.15rem; }
@@ -119,14 +120,15 @@
   .note { color: var(--muted); font-size: .9rem; }
   .hidden { display: none !important; }
 
+
   /* Kid screens: no text selection, callouts, or double-tap zoom getting in the way of a press */
   #tab-home, #tab-spin, .overlay { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
   .tile, .pick, .tabs button, button.round, button.go, #spin, #wheel-wrap { touch-action: manipulation; }
   .tile.pressing, .pick.pressing, button.pressing, #wheel-wrap.pressing { filter: brightness(.92); transform: scale(.97); }
 
   /* Kid home */
-  .home-hello { font-size: clamp(1.4rem, 6.5vw, 2rem); margin: 0 0 14px; text-align: center; }
-  .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: min(100%, 520px); margin-bottom: 20px; }
+  .home-hello { font-size: 1.7rem; font-size: clamp(1.4rem, 6.5vw, 2rem); margin: 0 0 14px; text-align: center; }
+  .tiles { display: grid; grid-template-columns: repeat(2, 1fr); grid-gap: 16px; gap: 16px; width: 100%; max-width: 520px; margin-bottom: 20px; }
   .tile {
     position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
     min-height: 150px; padding: 12px 8px; border-radius: 26px; border: 4px solid rgba(0,0,0,.06);
@@ -152,7 +154,7 @@
   .tile.stack .mini { width: 52px; height: 52px; font-size: 44px; }
   .tile.stack .tile-picks.compact { gap: 8px; }
   .tile.stack .compact .mini { width: 44px; height: 44px; font-size: 38px; }
-  .subhead { width: min(100%, 460px); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .subhead { width: 100%; max-width: 460px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   button.round {
     width: 56px; height: 56px; padding: 0; border-radius: 50%; font-size: 1.7rem; flex: none;
     background: var(--card); color: var(--ink); border: 3px solid var(--border); box-shadow: 0 3px 0 rgba(0,0,0,.12);
@@ -171,18 +173,18 @@
     flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
     display: flex; flex-direction: column; align-items: center; padding: 0 16px 12px;
   }
-  .kid-inner { margin: auto 0; width: min(100%, 520px); display: flex; flex-direction: column; align-items: center; }
-  .overlay .big-emoji { font-size: min(48vw, 220px); line-height: 1.1; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both, float 1.4s ease-in-out .7s infinite; }
-  .overlay .big-name { font-size: clamp(2rem, 10vw, 3.2rem); font-weight: bold; margin-top: 8px; animation: pop .5s .25s both; }
+  .kid-inner { margin: auto 0; width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; }
+  .overlay .big-emoji { font-size: 180px; font-size: min(48vw, 220px); line-height: 1.1; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both, float 1.4s ease-in-out .7s infinite; }
+  .overlay .big-name { font-size: 2.6rem; font-size: clamp(2rem, 10vw, 3.2rem); font-weight: bold; margin-top: 8px; animation: pop .5s .25s both; }
   .overlay .yay { font-size: 1.6rem; margin-top: 6px; animation: pop .5s .45s both; }
-  .kid-title { font-size: clamp(1.5rem, 7vw, 2.3rem); margin: 4px 0 2px; animation: pop .4s both; }
+  .kid-title { font-size: 1.9rem; font-size: clamp(1.5rem, 7vw, 2.3rem); margin: 4px 0 2px; animation: pop .4s both; }
   .kid-sub { color: var(--muted); margin: 0 0 6px; }
   .kid-banner { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 2px 0 8px; text-align: left; }
   .kid-banner .wx-icon { font-size: 72px; line-height: 1; }
   .kid-banner .wx-temp { font-size: 3.2rem; font-weight: bold; line-height: 1; }
   .kid-banner .wx-meta { color: var(--muted); font-size: .95rem; margin-top: 4px; }
-  .pick-grid { display: grid; gap: 14px; width: 100%; margin: 10px 0 8px; grid-template-columns: repeat(2, 1fr); }
-  .pick-grid.cols-3 { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .pick-grid { display: grid; grid-gap: 14px; gap: 14px; width: 100%; margin: 10px 0 8px; grid-template-columns: repeat(2, 1fr); }
+  .pick-grid.cols-3 { grid-template-columns: repeat(3, 1fr); grid-gap: 12px; gap: 12px; }
   .pick-grid.shake { animation: shake .45s; }
   @keyframes shake { 0%, 100% { transform: translateX(0) } 20%, 60% { transform: translateX(-10px) } 40%, 80% { transform: translateX(10px) } }
   .pick {
@@ -216,6 +218,7 @@
   .pick[aria-pressed="true"] .check { display: flex; animation: pop .25s both; }
   .kid-actions {
     flex: none; display: flex; justify-content: center;
+    padding: 12px 16px 18px;
     padding: 12px 16px calc(18px + env(safe-area-inset-bottom, 0px));
     background: var(--bg); box-shadow: 0 -6px 16px rgba(0,0,0,.08);
   }
@@ -225,14 +228,14 @@
     box-shadow: 0 6px 0 #a8321d, 0 10px 20px rgba(232,69,42,.3);
   }
   button.go.waiting { filter: grayscale(.9); opacity: .5; box-shadow: 0 6px 0 rgba(0,0,0,.2); }
-  .count-num { font-size: clamp(5rem, 32vw, 10rem); font-weight: bold; line-height: 1; color: #f57c00; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both; }
+  .count-num { font-size: 7rem; font-size: clamp(5rem, 32vw, 10rem); font-weight: bold; line-height: 1; color: #f57c00; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both; }
   .pumpkins { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; font-size: 32px; max-width: 380px; margin: 10px auto; }
   .pumpkins span { animation: pop .3s both; }
   .dot { display: inline-block; width: 1em; height: 1em; border-radius: 50%; border: 2px solid rgba(0,0,0,.15); vertical-align: -0.15em; }
   @keyframes bounce-in { 0% { transform: scale(0) rotate(-30deg) } 100% { transform: scale(1) rotate(0) } }
   @keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
   @keyframes pop { 0% { opacity: 0; transform: scale(.6) } 100% { opacity: 1; transform: scale(1) } }
-  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 11; }
+  #confetti { position: fixed; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 11; }
 
   /* History */
   .history { list-style: none; padding: 0 !important; margin: 0 !important; }
@@ -269,6 +272,35 @@
   .row > div { flex: 1; }
   .row .emoji input { text-align: center; }
   input[type=color] { width: 48px; height: 40px; border: none; background: none; padding: 0; }
+
+  /* Spacing for browsers without flex "gap" (set from JS) */
+  .no-flex-gap header > * + *, .no-flex-gap .tabs > * + *, .no-flex-gap .subhead > * + *,
+  .no-flex-gap .kid-banner > * + *, .no-flex-gap .row > * + *, .no-flex-gap .history li > * + *,
+  .no-flex-gap .history .meal-row > * + *, .no-flex-gap label.check > * + *,
+  .no-flex-gap details.meal summary > * + *, .no-flex-gap header > div > * + * { margin-left: 8px; }
+  .no-flex-gap .controls > * { margin: 6px; }
+  .no-flex-gap .tile > * + *, .no-flex-gap .pick > * + * { margin-top: 6px; }
+  .no-flex-gap .tile.wide:not(.stack) > * + * { margin-top: 0; margin-left: 14px; }
+  .no-flex-gap .tile-picks > *, .no-flex-gap .pumpkins > * { margin: 2px 4px; }
+  .no-flex-gap .chips > * { margin: 0 8px 8px 0; }
+
+  /* Low-power screens (fridge, TV): no endless animations */
+  .low-power #spin { animation: none; }
+  .low-power .overlay .big-emoji { animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both; }
+  .low-power .pick { transition: none; }
+
+  /* Big landscape screens (fridge, tablet): use the width — 4 tiles across, bigger cards */
+  @media (min-width: 900px) {
+    header, .subhead { max-width: 1100px; }
+    .tiles { max-width: 1100px; grid-template-columns: repeat(4, 1fr); }
+    .tile { min-height: 180px; font-size: 1.3rem; }
+    .tile .tile-icon { font-size: 80px; }
+    .card { max-width: 720px; }
+    .kid-inner { max-width: 1100px; }
+    .pick-grid { grid-template-columns: repeat(4, 1fr); }
+    .pick-grid.cols-3 { grid-template-columns: repeat(6, 1fr); }
+    .wheel-wrap { width: 70vh; max-width: 640px; }
+  }
 </style>
 </head>
 <body>
@@ -439,6 +471,36 @@
   <canvas id="confetti"></canvas>
 
 <script>
+  // ---------- device quirks ----------
+  // Fridge / TV browsers (Samsung Family Hub runs Tizen) are slower and often a few versions behind.
+  // "Low power" turns off endless animations and lightens confetti. Add ?fridge=1 to the address once
+  // to force it on for this device (?fridge=0 turns it back off).
+  const LOW_POWER = (function () {
+    let forced = null;
+    try {
+      const m = location.search.match(/[?&]fridge=([01])/);
+      if (m) localStorage.setItem("breakfastWheel.fridge", m[1]);
+      forced = localStorage.getItem("breakfastWheel.fridge");
+    } catch (e) {}
+    if (forced !== null) return forced === "1";
+    const ua = navigator.userAgent || "";
+    return /Tizen|Family ?Hub|SMART-TV|SmartTV|Web0S/i.test(ua) ||
+      (navigator.hardwareConcurrency || 4) <= 2 ||
+      !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  })();
+  if (LOW_POWER) document.documentElement.classList.add("low-power");
+
+  // Older browsers support "gap" in grids but not in flex rows; add spacing with margins there instead.
+  (function () {
+    const d = document.createElement("div");
+    d.style.cssText = "display:flex;flex-direction:column;row-gap:1px;position:absolute";
+    d.appendChild(document.createElement("div"));
+    d.appendChild(document.createElement("div"));
+    document.body.appendChild(d);
+    if (d.scrollHeight !== 1) document.documentElement.classList.add("no-flex-gap");
+    document.body.removeChild(d);
+  })();
+
   // Every meal is built to be balanced: main + fruit + protein (and a veggie where it fits).
   // "heavy" meals get extra tips to offset the sugar/carbs. "weekly" meals can be eaten once per week.
   const DEFAULT_MEALS = [
@@ -498,7 +560,12 @@
     { id: "black", name: "Black", css: "#212121" },
     { id: "white", name: "White", css: "#ffffff" },
     { id: "gray", name: "Gray", css: "#9e9e9e" },
-    { id: "rainbow", name: "Rainbow", css: "conic-gradient(#e53935, #fb8c00, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935)" }
+    {
+      id: "rainbow", name: "Rainbow",
+      css: window.CSS && CSS.supports && CSS.supports("background", "conic-gradient(red, blue)")
+        ? "conic-gradient(#e53935, #fb8c00, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935)"
+        : "linear-gradient(135deg, #e53935, #fb8c00, #fdd835, #43a047, #1e88e5, #8e24aa)"
+    }
   ];
 
   const FEELINGS = [
@@ -590,7 +657,8 @@
 
   // ---------- dates ----------
   function ymd(d) {
-    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    const two = n => (n < 10 ? "0" : "") + n;
+    return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate());
   }
   function parseYmd(s) {
     const [y, m, d] = s.split("-").map(Number);
@@ -774,7 +842,12 @@
   }
 
   // Idle twinkle
-  setInterval(() => { if (!spinning) { lightPhase ^= 1; draw(); } }, 700);
+  // (only while the wheel is on screen; slower on low-power screens like a fridge)
+  setInterval(() => {
+    if (spinning || document.hidden || document.getElementById("tab-spin").classList.contains("hidden")) return;
+    lightPhase ^= 1;
+    draw();
+  }, LOW_POWER ? 1400 : 700);
 
   function wigglePointer() {
     const p = document.getElementById("pointer");
@@ -842,12 +915,12 @@
   function confetti() {
     const cv = document.getElementById("confetti");
     const c = cv.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = LOW_POWER ? 1 : (window.devicePixelRatio || 1);
     cv.width = innerWidth * dpr;
     cv.height = innerHeight * dpr;
     c.scale(dpr, dpr);
     const colors = ["#ff6b9d", "#ffbe3d", "#5dade2", "#a0d468", "#c39bd3", "#ff8c42", "#ffe14d"];
-    const parts = Array.from({ length: 160 }, () => ({
+    const parts = Array.from({ length: LOW_POWER ? 50 : 160 }, () => ({
       x: innerWidth / 2 + (Math.random() - 0.5) * 80,
       y: innerHeight * 0.4,
       vx: (Math.random() - 0.5) * 16,
@@ -890,7 +963,9 @@
   // ---------- pictures ----------
   // "🫐 Blueberries" -> { emoji: "🫐", name: "Blueberries" }; "Raspberries" -> { emoji: "", name: "Raspberries" }
   function splitLabel(text) {
-    const m = text.match(/^([^\p{L}\p{N}]+?)\s+(.+)$/u);
+    // Leading picture = everything before the first space when it has no plain letters or digits.
+    // (No \p{...} regex here: older browsers, like fridge and TV browsers, can't parse it.)
+    const m = text.match(/^([^A-Za-z0-9\s]+)\s+(.+)$/);
     return m ? { emoji: m[1], name: m[2] } : { emoji: "", name: text };
   }
 
@@ -1219,11 +1294,11 @@
           rain: d.daily.precipitation_probability_max[0] || 0,
           dayCode: d.daily.weather_code[0]
         };
+        weatherLoading = null;
         save(WEATHER_KEY, weather);
         renderHome();
         return weather;
-      })
-      .finally(() => { weatherLoading = null; });
+      }, e => { weatherLoading = null; throw e; });
     return weatherLoading;
   }
 
@@ -1973,15 +2048,16 @@
     dirty: false,
     queue: Promise.resolve(),
 
-    async rpc(fn, body) {
+    // Plain promise chains (no async/await) so older fridge/TV browsers can run this too.
+    rpc(fn, body) {
       const headers = { "Content-Type": "application/json", apikey: this.cfg.key };
       if (this.cfg.key.startsWith("eyJ")) headers.Authorization = "Bearer " + this.cfg.key;
-      const res = await fetch(this.cfg.url.replace(/\/+$/, "") + "/rest/v1/rpc/" + fn, {
+      return fetch(this.cfg.url.replace(/\/+$/, "") + "/rest/v1/rpc/" + fn, {
         method: "POST", headers, body: JSON.stringify(body)
-      });
-      const text = await res.text();
-      if (!res.ok) throw new Error(fn + " failed (" + res.status + "): " + text.slice(0, 200));
-      return text ? JSON.parse(text) : null;
+      }).then(res => res.text().then(text => {
+        if (!res.ok) throw new Error(fn + " failed (" + res.status + "): " + text.slice(0, 200));
+        return text ? JSON.parse(text) : null;
+      }));
     },
     get() { return this.rpc("get_breakfast", { p_code: this.cfg.code }); },
     put(data) { return this.rpc("put_breakfast", { p_code: this.cfg.code, p_data: data }); },
@@ -1996,64 +2072,64 @@
 
     // Re-apply a change on top of the newest server copy and save it back.
     push(op) { return this.enqueue(() => this.pushNow(op)); },
-    async pushNow(op) {
-        if (!this.cfg) return;
-        this.setStatus("syncing");
-        try {
-          const remote = await this.get();
+    pushNow(op) {
+      if (!this.cfg) return Promise.resolve();
+      this.setStatus("syncing");
+      let next;
+      return this.get()
+        .then(remote => {
           // Offline edits since the last good sync win as a whole; otherwise merge this change in.
-          const next = remote && !this.dirty ? normalize(remote) : clone(state);
+          next = remote && !this.dirty ? normalize(remote) : clone(state);
           op(next);
           next.updatedAt = Date.now();
-          await this.put(next);
+          return this.put(next);
+        })
+        .then(() => {
           this.dirty = false;
           applyRemote(next);
           this.setStatus("ok");
-        } catch (e) {
+        })
+        .catch(e => {
           console.warn(e);
           this.dirty = true;
           this.setStatus("error");
-        }
+        });
     },
 
     // Fetch the latest copy from the server.
     pull() { return this.enqueue(() => this.pullNow()); },
-    async pullNow() {
-        if (!this.cfg) return;
-        if (this.dirty) return this.pushNow(() => {});
-        if (menuTimer) return; // a menu edit is about to be pushed; pull after that
-        try {
-          const remote = await this.get();
-          if (!remote) {
-            await this.put(clone(state)); // first device: seed the database
-          } else if (remote.updatedAt !== state.updatedAt) {
-            applyRemote(normalize(remote));
-          }
-          this.setStatus("ok");
-        } catch (e) {
+    pullNow() {
+      if (!this.cfg) return Promise.resolve();
+      if (this.dirty) return this.pushNow(() => {});
+      if (menuTimer) return Promise.resolve(); // a menu edit is about to be pushed; pull after that
+      return this.get()
+        .then(remote => {
+          if (!remote) return this.put(clone(state)); // first device: seed the database
+          if (remote.updatedAt !== state.updatedAt) applyRemote(normalize(remote));
+        })
+        .then(() => this.setStatus("ok"))
+        .catch(e => {
           console.warn(e);
           this.setStatus("error");
-        }
+        });
     },
 
     // First connection on this device: keep the server's menu, add any local-only history.
-    async connect(cfg) {
+    connect(cfg) {
       this.cfg = cfg;
       this.setStatus("syncing");
-      const remote = await this.get(); // throws on bad URL/key/setup
-      save(KEYS.sync, cfg);
-      if (!remote) {
-        await this.put(clone(state));
-      } else {
-        const merged = normalize(remote);
-        const ids = new Set(merged.history.map(h => h.id));
-        state.history.forEach(h => { if (!ids.has(h.id)) merged.history.push(h); });
-        Object.entries(state.days).forEach(([d, picks]) => { merged.days[d] = Object.assign({}, picks, merged.days[d] || {}); });
-        merged.updatedAt = Date.now();
-        await this.put(merged);
-        applyRemote(merged);
-      }
-      this.setStatus("ok");
+      return this.get() // rejects on bad URL/key/setup
+        .then(remote => {
+          save(KEYS.sync, cfg);
+          if (!remote) return this.put(clone(state));
+          const merged = normalize(remote);
+          const ids = new Set(merged.history.map(h => h.id));
+          state.history.forEach(h => { if (!ids.has(h.id)) merged.history.push(h); });
+          Object.keys(state.days).forEach(d => { merged.days[d] = Object.assign({}, state.days[d], merged.days[d] || {}); });
+          merged.updatedAt = Date.now();
+          return this.put(merged).then(() => applyRemote(merged));
+        })
+        .then(() => this.setStatus("ok"));
     },
 
     disconnect() {
@@ -2106,18 +2182,16 @@
     document.getElementById("sync-code").value = randomCode();
   });
 
-  async function connectWith(cfg) {
+  function connectWith(cfg) {
     const err = document.getElementById("sync-error");
     err.classList.add("hidden");
-    try {
-      await sync.connect(cfg);
-    } catch (e) {
+    return sync.connect(cfg).catch(e => {
       console.warn(e);
       sync.cfg = null;
       sync.setStatus("local");
       err.textContent = "Couldn't connect: " + e.message + ". Double-check the URL and key, and that you ran the setup SQL.";
       err.classList.remove("hidden");
-    }
+    });
   }
 
   document.getElementById("sync-connect").addEventListener("click", () => {
@@ -2133,14 +2207,12 @@
     connectWith({ url, key, code });
   });
 
-  document.getElementById("sync-copy").addEventListener("click", async () => {
+  document.getElementById("sync-copy").addEventListener("click", () => {
     const link = location.origin + location.pathname + "#sync=" + encodeURIComponent(btoa(JSON.stringify(sync.cfg)));
-    try {
-      await navigator.clipboard.writeText(link);
-      alert("Setup link copied! Text it to the other phone and open it there.");
-    } catch (e) {
-      prompt("Copy this link and open it on the other device:", link);
-    }
+    const fallback = () => prompt("Copy this link and open it on the other device:", link);
+    if (!navigator.clipboard) return fallback();
+    navigator.clipboard.writeText(link)
+      .then(() => alert("Setup link copied! Text it to the other phone and open it there."), fallback);
   });
   document.getElementById("sync-now").addEventListener("click", () => sync.pull());
   document.getElementById("sync-disconnect").addEventListener("click", () => {
@@ -2250,6 +2322,20 @@
   window.addEventListener("hashchange", handleSetupLink);
   if (!handleSetupLink() && sync.cfg) sync.pull();
   if (!weatherFresh()) fetchWeather().catch(() => {});
+
+  // A fridge screen never gets "hidden", so check once a minute for a new day, a new part of the day
+  // (Good morning → Good afternoon), and stale weather.
+  let lastDay = todayKey(), lastHello = document.getElementById("home-hello").textContent;
+  setInterval(() => {
+    const hour = new Date().getHours();
+    const hello = hour < 12 ? "Good morning! ☀️" : hour < 17 ? "Good afternoon! 🌤️" : "Good evening! 🌙";
+    if (todayKey() !== lastDay || hello !== lastHello) {
+      lastDay = todayKey();
+      lastHello = hello;
+      if (!overlayMode && !spinning) refresh();
+    }
+    if (!weatherFresh() && !weatherLoading) fetchWeather().catch(() => {});
+  }, 60000);
 
   // Keep devices in step: check for changes every 15s while the page is open, and when it comes back.
   setInterval(() => { if (sync.cfg && document.visibilityState === "visible") sync.pull(); }, 15000);
