@@ -150,6 +150,8 @@
   .tile.wide.stack { flex-direction: column; gap: 4px; }
   .tile.stack .tile-picks { flex-wrap: nowrap; gap: 14px; min-height: 52px; }
   .tile.stack .mini { width: 52px; height: 52px; font-size: 44px; }
+  .tile.stack .tile-picks.compact { gap: 8px; }
+  .tile.stack .compact .mini { width: 44px; height: 44px; font-size: 38px; }
   .subhead { width: min(100%, 460px); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   button.round {
     width: 56px; height: 56px; padding: 0; border-radius: 50%; font-size: 1.7rem; flex: none;
@@ -175,6 +177,10 @@
   .overlay .yay { font-size: 1.6rem; margin-top: 6px; animation: pop .5s .45s both; }
   .kid-title { font-size: clamp(1.5rem, 7vw, 2.3rem); margin: 4px 0 2px; animation: pop .4s both; }
   .kid-sub { color: var(--muted); margin: 0 0 6px; }
+  .kid-banner { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 2px 0 8px; text-align: left; }
+  .kid-banner .wx-icon { font-size: 72px; line-height: 1; }
+  .kid-banner .wx-temp { font-size: 3.2rem; font-weight: bold; line-height: 1; }
+  .kid-banner .wx-meta { color: var(--muted); font-size: .95rem; margin-top: 4px; }
   .pick-grid { display: grid; gap: 14px; width: 100%; margin: 10px 0 8px; grid-template-columns: repeat(2, 1fr); }
   .pick-grid.cols-3 { grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .pick-grid.shake { animation: shake .45s; }
@@ -413,6 +419,7 @@
 
       <div id="kid-pick" class="hidden" style="width:100%">
         <h2 class="kid-title" id="kid-title"></h2>
+        <div id="kid-banner"></div>
         <p class="kid-sub" id="kid-sub">Tap as many as you like!</p>
         <div class="pick-grid" id="kid-grid"></div>
       </div>
@@ -906,6 +913,49 @@
       <rect x="18" y="31" width="64" height="6" rx="3" fill="#ff8a80" opacity=".8"/>
       <circle cx="30" cy="62" r="11" fill="#333"/><circle cx="30" cy="62" r="4" fill="#ccc"/>
       <circle cx="70" cy="62" r="11" fill="#333"/><circle cx="70" cy="62" r="4" fill="#ccc"/></svg>`,
+    // Monsters drawn by hand so they show up on every phone (the troll emoji is too new for many devices).
+    troll: `<svg viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M30 26 Q34 4 43 20 Q50 0 57 20 Q66 4 70 26 Z" fill="#ff8a3d" stroke="#c45a14" stroke-width="2" stroke-linejoin="round"/>
+      <ellipse cx="15" cy="54" rx="10" ry="14" fill="#7cb342" stroke="#558b2f" stroke-width="2"/>
+      <ellipse cx="85" cy="54" rx="10" ry="14" fill="#7cb342" stroke="#558b2f" stroke-width="2"/>
+      <circle cx="50" cy="57" r="36" fill="#8bc34a" stroke="#558b2f" stroke-width="3"/>
+      <circle cx="37" cy="47" r="8" fill="#fff"/><circle cx="63" cy="47" r="8" fill="#fff"/>
+      <circle cx="38" cy="49" r="4" fill="#222"/><circle cx="62" cy="49" r="4" fill="#222"/>
+      <ellipse cx="50" cy="61" rx="9" ry="7" fill="#689f38"/>
+      <path d="M33 73 Q50 87 67 73" stroke="#33691e" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <rect x="40" y="76" width="6" height="7" rx="1" fill="#fff"/><rect x="54" y="76" width="6" height="7" rx="1" fill="#fff"/></svg>`,
+    mummy: `<svg viewBox="0 0 100 100" aria-hidden="true">
+      <rect x="18" y="8" width="64" height="86" rx="30" fill="#efe6d2" stroke="#b8a888" stroke-width="3"/>
+      <path d="M22 26 L80 20 M19 58 L82 64 M22 76 L79 70 M28 88 L72 92" stroke="#cdbd98" stroke-width="5" stroke-linecap="round"/>
+      <rect x="24" y="34" width="52" height="18" rx="9" fill="#3b3024"/>
+      <circle cx="40" cy="43" r="6" fill="#fff"/><circle cx="60" cy="43" r="6" fill="#fff"/>
+      <circle cx="41" cy="44" r="3" fill="#222"/><circle cx="59" cy="44" r="3" fill="#222"/></svg>`,
+    yeti: `<svg viewBox="0 0 100 100" aria-hidden="true">
+      <g fill="#b3d4f2"><circle cx="50" cy="54" r="40"/><circle cx="20" cy="40" r="14"/><circle cx="80" cy="40" r="14"/>
+        <circle cx="30" cy="20" r="13"/><circle cx="50" cy="14" r="14"/><circle cx="70" cy="20" r="13"/></g>
+      <g fill="#fff"><circle cx="50" cy="54" r="37"/><circle cx="20" cy="40" r="11"/><circle cx="80" cy="40" r="11"/>
+        <circle cx="30" cy="20" r="10"/><circle cx="50" cy="14" r="11"/><circle cx="70" cy="20" r="10"/></g>
+      <ellipse cx="50" cy="57" rx="24" ry="20" fill="#8ec5f0"/>
+      <circle cx="41" cy="52" r="4.5" fill="#1b2a3a"/><circle cx="59" cy="52" r="4.5" fill="#1b2a3a"/>
+      <path d="M40 63 Q50 73 60 63 Z" fill="#fff" stroke="#1b2a3a" stroke-width="3" stroke-linejoin="round"/></svg>`,
+    cyclops: `<svg viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M30 28 L24 6 L41 21 Z M70 28 L76 6 L59 21 Z" fill="#ffe082" stroke="#c8a83e" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="50" cy="56" r="38" fill="#9c6ade" stroke="#6a3fb0" stroke-width="3"/>
+      <circle cx="50" cy="47" r="17" fill="#fff" stroke="#6a3fb0" stroke-width="2"/>
+      <circle cx="52" cy="49" r="8" fill="#2e7d32"/><circle cx="53" cy="50" r="4" fill="#111"/><circle cx="47" cy="43" r="3" fill="#fff"/>
+      <path d="M32 71 Q50 90 68 71 Z" fill="#4a2a7a"/>
+      <path d="M40 72 L44 79 L48 72 Z M52 72 L56 79 L60 72 Z" fill="#fff"/></svg>`,
+    slime: `<svg viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M14 80 Q10 40 34 26 Q50 10 66 26 Q90 40 86 80 Q86 92 78 86 Q74 96 66 86 Q60 96 52 86 Q44 96 38 86 Q30 96 24 86 Q14 92 14 80 Z" fill="#76d275" stroke="#3f9a3e" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="34" cy="36" rx="7" ry="4" fill="#fff" opacity=".6" transform="rotate(-30 34 36)"/>
+      <circle cx="40" cy="52" r="7" fill="#fff"/><circle cx="60" cy="52" r="7" fill="#fff"/>
+      <circle cx="41" cy="53" r="3.5" fill="#1b3a1b"/><circle cx="59" cy="53" r="3.5" fill="#1b3a1b"/>
+      <path d="M42 66 Q50 74 58 66" stroke="#1b3a1b" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`,
+    beanie: `<svg viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="16" r="10" fill="#fff" stroke="#ccc" stroke-width="2"/>
+      <path d="M18 68 Q18 22 50 22 Q82 22 82 68 Z" fill="#e53935"/>
+      <path d="M34 28 L34 66 M50 24 L50 66 M66 28 L66 66" stroke="#c62828" stroke-width="4"/>
+      <rect x="14" y="62" width="72" height="20" rx="9" fill="#b71c1c"/></svg>`,
     stroller: `<svg viewBox="0 0 100 92" aria-hidden="true">
       <path d="M74 44 L84 14 L96 14" stroke="#555" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M30 66 L24 78 M62 66 L68 78" stroke="#555" stroke-width="4" stroke-linecap="round"/>
@@ -1129,11 +1179,140 @@
     if (wait) setTimeout(speak, wait); else speak();
   }
 
+  // Third item is an emoji, or "svg:<name>" for one of the drawings in ART_SVG.
   const MONSTERS = [
     ["ghost", "Ghost", "👻"], ["space", "Space Monster", "👾"], ["dragon", "Dragon", "🐉"], ["alien", "Alien", "👽"],
-    ["troll", "Troll", "🧌"], ["vampire", "Vampire", "🧛"], ["zombie", "Zombie", "🧟"], ["sea", "Sea Monster", "🦑"],
-    ["robot", "Robot Monster", "🤖"]
-  ].map(([id, name, emoji]) => ({ id, name, emoji }));
+    ["troll", "Troll", "svg:troll"], ["vampire", "Vampire", "🧛"], ["zombie", "Zombie", "🧟"], ["sea", "Sea Monster", "🦑"],
+    ["robot", "Robot Monster", "🤖"], ["mummy", "Mummy", "svg:mummy"], ["yeti", "Yeti", "svg:yeti"],
+    ["cyclops", "Cyclops", "svg:cyclops"], ["slime", "Slime Monster", "svg:slime"], ["ogre", "Ogre", "👹"],
+    ["goblin", "Goblin", "👺"], ["skeleton", "Skeleton", "💀"], ["witch", "Witch", "🧙"], ["werewolf", "Werewolf", "🐺"],
+    ["pumpkin", "Pumpkin Monster", "🎃"], ["nessie", "Loch Ness Monster", "🦕"], ["spider", "Giant Spider", "🕷️"],
+    ["bat", "Bat Monster", "🦇"], ["genie", "Genie", "🧞"]
+  ].map(([id, name, pic]) => pic.startsWith("svg:") ? { id, name, svg: pic.slice(4) } : { id, name, emoji: pic });
+
+  // ---------- weather: what to wear ----------
+  // Free forecast from Open-Meteo (no account or key needed). Cached on this device for 30 minutes.
+  const WEATHER_PLACE = { zip: "43212", name: "Columbus, OH", lat: 39.987, lon: -83.045 };
+  const WEATHER_KEY = "breakfastWheel.weather";
+  let weather = load(WEATHER_KEY, null); // { at, temp, feels, code, wind, high, low, rain, dayCode }
+  if (weather && Date.now() - weather.at > 12 * 3600000) weather = null; // yesterday's weather is no help
+  let weatherLoading = null;
+  const weatherFresh = () => !!weather && Date.now() - weather.at < 30 * 60000;
+
+  function fetchWeather() {
+    if (weatherLoading) return weatherLoading;
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=" + WEATHER_PLACE.lat + "&longitude=" + WEATHER_PLACE.lon +
+      "&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m" +
+      "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code" +
+      "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=1";
+    weatherLoading = fetch(url)
+      .then(r => { if (!r.ok) throw new Error("weather " + r.status); return r.json(); })
+      .then(d => {
+        weather = {
+          at: Date.now(),
+          temp: Math.round(d.current.temperature_2m),
+          feels: Math.round(d.current.apparent_temperature),
+          code: d.current.weather_code,
+          wind: Math.round(d.current.wind_speed_10m),
+          high: Math.round(d.daily.temperature_2m_max[0]),
+          low: Math.round(d.daily.temperature_2m_min[0]),
+          rain: d.daily.precipitation_probability_max[0] || 0,
+          dayCode: d.daily.weather_code[0]
+        };
+        save(WEATHER_KEY, weather);
+        renderHome();
+        return weather;
+      })
+      .finally(() => { weatherLoading = null; });
+    return weatherLoading;
+  }
+
+  const isRainCode = c => (c >= 51 && c <= 67) || (c >= 80 && c <= 82) || c >= 95;
+  const isSnowCode = c => (c >= 71 && c <= 77) || c === 85 || c === 86;
+  function weatherLook(code) {
+    if (code === 0) return ["☀️", "sunny"];
+    if (code === 1) return ["🌤️", "mostly sunny"];
+    if (code === 2) return ["⛅", "partly cloudy"];
+    if (code === 3) return ["☁️", "cloudy"];
+    if (code === 45 || code === 48) return ["🌫️", "foggy"];
+    if (code >= 51 && code <= 57) return ["🌦️", "drizzly"];
+    if (isSnowCode(code)) return ["🌨️", "snowy"];
+    if (code >= 95) return ["⛈️", "stormy"];
+    if (isRainCode(code)) return ["🌧️", "rainy"];
+    return ["🌤️", "nice"];
+  }
+
+  const WEAR_ITEMS = [
+    ["coat", "Winter coat", "🧥", "Coat on! Toasty!"], ["jacket", "Jacket", "🧥", "Jacket on!"],
+    ["raincoat", "Raincoat", "🧥", "Raincoat on!"], ["hat", "Warm hat", "svg:beanie", "Warm hat on!"],
+    ["mittens", "Mittens", "🧤", "Mittens on!"], ["scarf", "Scarf", "🧣", "Scarf on!"],
+    ["shirt", "Long sleeves", "👕", "Shirt on!"], ["tshirt", "T-shirt", "👕", "T-shirt on!"],
+    ["pants", "Long pants", "👖", "Pants on!"], ["snowpants", "Snow pants", "👖", "Snow pants on!"],
+    ["shorts", "Shorts", "🩳", "Shorts on!"], ["socks", "Socks", "🧦", "Socks on!"],
+    ["shoes", "Shoes", "👟", "Shoes on!"], ["rainboots", "Rain boots", "🥾", "Rain boots on!"],
+    ["snowboots", "Snow boots", "🥾", "Snow boots on!"], ["umbrella", "Umbrella", "☂️", "Got your umbrella!"],
+    ["sunglasses", "Sunglasses", "🕶️", "So cool!"], ["sunhat", "Sun hat", "👒", "Sun hat on!"],
+    ["sunscreen", "Sunscreen", "🧴", "Sunscreen on!"]
+  ].map(([id, name, pic, cheer]) => Object.assign(
+    pic.startsWith("svg:") ? { id, name, svg: pic.slice(4) } : { id, name, emoji: pic }, { cheer: "Yay! " + cheer }));
+
+  // Pick clothes from how warm it feels outside plus today's rain/snow chances.
+  function wearIds(w) {
+    if (!w) return ["jacket", "pants", "socks", "shoes"];
+    const t = w.feels;
+    const snowy = isSnowCode(w.code) || isSnowCode(w.dayCode);
+    const rainy = !snowy && (isRainCode(w.code) || isRainCode(w.dayCode) || w.rain >= 50);
+    const ids = [];
+    if (t < 45) ids.push("coat");
+    else if (rainy) ids.push("raincoat");
+    else if (t < 60) ids.push("jacket");
+    if (t < 40) ids.push("hat");
+    if (t < 32) ids.push("mittens", "scarf");
+    ids.push(t >= 65 ? "tshirt" : "shirt");
+    ids.push(snowy ? "snowpants" : t >= 75 ? "shorts" : "pants");
+    ids.push("socks", snowy ? "snowboots" : rainy ? "rainboots" : "shoes");
+    if (rainy) ids.push("umbrella");
+    if (!rainy && !snowy && w.code <= 1 && t >= 60) ids.push("sunglasses");
+    if (!rainy && !snowy && t >= 75) ids.push("sunhat", "sunscreen");
+    return ids;
+  }
+  const wearOptions = () => wearIds(weather).map(id => WEAR_ITEMS.find(x => x.id === id));
+
+  // Get fresh weather first (waiting up to 6 seconds), then show what to wear.
+  function openWear() {
+    if (weatherFresh()) return openPicker("wear");
+    const loading = fetchWeather();
+    renderHome(); // tile says "Checking the weather…"
+    Promise.race([loading, new Promise(r => setTimeout(r, 6000))])
+      .catch(() => {})
+      .then(() => { renderHome(); if (!overlayMode) openPicker("wear"); });
+  }
+
+  // Big weather line shown above the clothes.
+  function weatherBanner() {
+    const el = document.createElement("div");
+    el.className = "kid-banner";
+    if (!weather) {
+      el.innerHTML = '<span class="wx-icon">🤷</span><div><div class="wx-meta">Couldn\'t check the weather.<br>Look outside with a grown-up!</div></div>';
+      return el;
+    }
+    const [icon, look] = weatherLook(weather.code);
+    const ic = document.createElement("span");
+    ic.className = "wx-icon";
+    ic.textContent = icon;
+    const box = document.createElement("div");
+    const temp = document.createElement("div");
+    temp.className = "wx-temp";
+    temp.textContent = weather.temp + "°";
+    const meta = document.createElement("div");
+    meta.className = "wx-meta";
+    meta.textContent = look[0].toUpperCase() + look.slice(1) + " · feels like " + weather.feels + "°" +
+      " · high " + weather.high + "° · " + weather.rain + "% " +
+      (isSnowCode(weather.code) || isSnowCode(weather.dayCode) ? "snow" : "rain");
+    box.append(temp, meta);
+    el.append(ic, box);
+    return el;
+  }
 
   const MORNING = [
     { id: "breakfast", name: "Eat breakfast", emoji: "🥣", cheer: "You ate breakfast!" },
@@ -1148,6 +1327,14 @@
       label: "Morning", icon: "☀️", tile: "#fff1b8", cols: 2, title: "Morning jobs!", checklist: true,
       sub: "Tap each one when you've done it!", options: () => MORNING
     },
+    wear: {
+      label: "Wear", icon: "🌦️", tile: "#d9f2ff", cols: 3, checklist: true, catalog: WEAR_ITEMS,
+      title: () => "What should you wear?",
+      speak: () => weather
+        ? "It's " + weather.temp + " degrees and " + weatherLook(weather.code)[1] + "! What should you wear?"
+        : "What should you wear today?",
+      sub: "Tap each one when it's on!", banner: weatherBanner, options: wearOptions
+    },
     fruit: {
       label: "Fruit", icon: "🍓", tile: "#ffe0e6", cols: 2, title: "What fruit do you want?",
       options: () => state.fruits.map(f => ({ id: f, name: splitLabel(f).name, fruit: f }))
@@ -1158,12 +1345,12 @@
     animals: { label: "Animal", icon: "🐶", tile: "#ffeedd", cols: 3, title: "What's your favorite animal today?", options: () => ANIMALS },
     monsters: { label: "Monster", icon: "👾", tile: "#ece4fb", cols: 3, title: "What's your favorite monster today?", options: () => MONSTERS }
   };
-  const TILE_ORDER = ["breakfast", "morning", "fruit", "feelings", "colors", "walk", "animals", "monsters", "halloween"];
+  const TILE_ORDER = ["breakfast", "morning", "wear", "fruit", "feelings", "colors", "walk", "animals", "monsters", "halloween"];
 
   // Find the option for a saved pick (fruits are saved as their text, so they still draw if the list changes).
   function findOption(key, id) {
     const q = QUESTIONS[key];
-    const opt = q && q.options().find(o => o.id === id);
+    const opt = q && (q.catalog || q.options()).find(o => o.id === id);
     if (opt) return opt;
     if (key === "fruit") return { id, name: splitLabel(id).name, fruit: id };
     return null;
@@ -1221,6 +1408,38 @@
         label.textContent = n === 0 ? "It's Halloween!" : n + (n === 1 ? " day" : " days") + " to Halloween";
         b.append(icon, label);
         b.addEventListener("click", openHalloween);
+      } else if (key === "wear") {
+        // Wide tile: today's weather plus the clothes to put on, faded until they're on.
+        const opts = wearOptions();
+        const onIds = (picks.wear || []).filter(id => opts.some(o => o.id === id));
+        b.classList.add("wide", "stack");
+        b.style.setProperty("--tile", QUESTIONS.wear.tile);
+        const head = document.createElement("span");
+        head.className = "tile-label";
+        if (weather) {
+          const [ic, look] = weatherLook(weather.code);
+          head.textContent = ic + " " + weather.temp + "° " + look;
+        } else head.textContent = weatherLoading ? "🌦️ Checking the weather…" : "🌦️ Weather";
+        const row = document.createElement("span");
+        row.className = "tile-picks";
+        row.classList.add("compact");
+        // Show the ones still to put on first, so the row always shows what's next.
+        const ordered = opts.filter(o => !onIds.includes(o.id)).concat(opts.filter(o => onIds.includes(o.id)));
+        ordered.slice(0, 4).forEach(o => {
+          const m = miniArt(o);
+          if (!onIds.includes(o.id)) m.style.opacity = ".3";
+          row.appendChild(m);
+        });
+        if (opts.length > 4) {
+          const more = document.createElement("span");
+          more.className = "more";
+          more.textContent = "+" + (opts.length - 4);
+          row.appendChild(more);
+        }
+        label.textContent = onIds.length >= opts.length ? "All dressed for the weather!" : "What to wear: " + onIds.length + " of " + opts.length;
+        if (onIds.length >= opts.length) b.classList.add("done");
+        b.append(head, row, label);
+        b.addEventListener("click", openWear);
       } else if (key === "morning") {
         // Wide tile: all four jobs in a row, faded until they're done.
         const doneIds = picks.morning || [];
@@ -1365,7 +1584,11 @@
     const options = q.options();
     pickKey = key;
     pickSel = (picksFor(todayKey())[key] || []).filter(id => options.some(o => o.id === id));
-    document.getElementById("kid-title").textContent = q.title;
+    const title = typeof q.title === "function" ? q.title() : q.title;
+    document.getElementById("kid-title").textContent = title;
+    const banner = document.getElementById("kid-banner");
+    banner.innerHTML = "";
+    if (q.banner) banner.appendChild(q.banner());
     document.getElementById("kid-sub").textContent = q.sub || "Tap as many as you like!";
     const grid = document.getElementById("kid-grid");
     grid.className = "pick-grid" + (q.cols === 3 ? " cols-3" : "");
@@ -1404,7 +1627,7 @@
             confetti();
             fanfare();
             setTimeout(() => say("Yay! All done! You did your whole morning!"), 500);
-          } else if (on) say("Yay! " + opt.cheer);
+          } else if (on) say(opt.cheer.startsWith("Yay") ? opt.cheer : "Yay! " + opt.cheer);
           return;
         }
         if (on) {
@@ -1416,7 +1639,7 @@
       grid.appendChild(b);
     });
     openOverlay("pick");
-    say(q.title);
+    say(q.speak ? q.speak() : title);
   }
 
   function savePicks() {
@@ -2026,12 +2249,14 @@
   }
   window.addEventListener("hashchange", handleSetupLink);
   if (!handleSetupLink() && sync.cfg) sync.pull();
+  if (!weatherFresh()) fetchWeather().catch(() => {});
 
   // Keep devices in step: check for changes every 15s while the page is open, and when it comes back.
   setInterval(() => { if (sync.cfg && document.visibilityState === "visible") sync.pull(); }, 15000);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "visible") return;
     renderHome(); // a new day starts with fresh tiles
+    if (!weatherFresh()) fetchWeather().catch(() => {});
     if (sync.cfg) sync.pull();
   });
 </script>

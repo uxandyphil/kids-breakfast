@@ -14,6 +14,11 @@ so the Home screen becomes "today at a glance". Picks reset each new day and are
   a fanfare, and the breakfast read out loud. The last spin of the day is today's breakfast.
 - **☀️ Morning jobs** — a checklist: Eat breakfast, Go potty, Get dressed, Brush teeth. Each tap is saved right
   away ("Yay! You brushed your teeth!"), the tile shows how many are done, and finishing all four gets confetti
+- **🌦️ What to wear** — checks the weather for zip 43212 (Columbus, OH) and shows the clothes to put on:
+  coat, warm hat, and mittens when it's cold; raincoat, rain boots, and umbrella when rain is likely; shorts,
+  sun hat, and sunscreen when it's hot. Tap each one when it's on. Uses the free [Open-Meteo](https://open-meteo.com)
+  forecast (no account needed), refreshed every 30 minutes. To use a different place, change `WEATHER_PLACE`
+  in `index.html`.
 - **🍓 Fruit** — Blueberries, Blackberries, Bananas, Raspberries (edit the list in the Menu tab)
 - **😊 Feelings** — 12 feelings: Happy, Excited, Silly, Loved, Proud, Calm, Sleepy, Hungry, Shy, Sad, Mad, Scared
 - **🎨 Colors** — 12 colors including Rainbow
@@ -21,7 +26,10 @@ so the Home screen becomes "today at a glance". Picks reset each new day and are
 - **🐶 Animal** — favorite animal today (40 animals). Each one makes its noise when tapped ("Dog! Woof woof!"),
   in a deep voice for big animals and a squeaky one for small ones, with sound effects like a roar, buzz,
   hiss, bubbles, or an elephant trumpet
-- **👾 Monster** — favorite monster today: Ghost, Space Monster, Dragon, Alien, Troll, Vampire, Zombie, Sea Monster, Robot Monster
+- **👾 Monster** — favorite monster today (23): Ghost, Space Monster, Dragon, Alien, Troll, Vampire, Zombie,
+  Sea Monster, Robot Monster, Mummy, Yeti, Cyclops, Slime Monster, Ogre, Goblin, Skeleton, Witch, Werewolf,
+  Pumpkin Monster, Loch Ness Monster, Giant Spider, Bat Monster, Genie. Troll, Mummy, Yeti, Cyclops, and Slime
+  are drawn pictures, so they show up on every phone.
 - **🎃 Halloween** — how many days until Halloween, with one pumpkin per day to count
 
 Every question is multi-select with big cards that bounce and are read aloud. **Done** only works once at least
