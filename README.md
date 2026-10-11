@@ -8,7 +8,9 @@ Live at https://uxandyphil.github.io/kids-breakfast/ (or open `index.html` in an
 
 ### Home (made for little ones)
 Big picture tiles your toddler can tap in any order. Whatever they pick shows right on the tile (with a ✓),
-so the Home screen becomes "today at a glance". Picks reset each new day and are kept in History.
+so the Home screen becomes "today at a glance". Each pick clears itself from Home **18 hours after it was made**
+(so evening picks are still there in the morning, and a morning's picks are gone by the next day), and
+**🔄 Start over** at the bottom of Home clears everything at once (with a confirm). Either way, picks stay in History.
 
 - **🎡 Spin for breakfast** — opens the wheel: big pictures, flashing lights, a clicking pointer, then confetti,
   a fanfare, and the breakfast read out loud. The last spin of the day is today's breakfast.
@@ -87,5 +89,5 @@ The app is tuned to run on a Samsung Family Hub fridge (Tizen browser) and other
 - On fridges/TVs (detected from the browser), slow devices, or with "reduce motion" on, endless animations
   are turned off and confetti is lighter. Add `?fridge=1` to the address once to force this mode on a device
   (`?fridge=0` turns it off).
-- Because a fridge screen is always on, the app checks every minute for a new day (fresh tiles, new greeting,
-  Halloween countdown) and refreshes the weather every 30 minutes.
+- Because a fridge screen is always on, the app checks every minute for picks that have turned 18 hours old,
+  a new greeting, and the Halloween countdown, and refreshes the weather every 30 minutes.

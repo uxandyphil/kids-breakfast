@@ -337,6 +337,12 @@
       <p class="note" style="margin-bottom:0">These can only be picked once a week (Monday–Sunday).
         It counts when it's today's breakfast — the last spin of the day wins. Delete it from History to undo.</p>
     </div>
+
+    <div class="controls" style="margin-top:0">
+      <button id="reset-board" class="secondary" type="button">🔄 Start over</button>
+    </div>
+    <p class="note" style="margin-top:-8px; text-align:center">Clears all the picks on this screen (they stay in History).<br>
+      Picks also clear by themselves 18 hours after they're made.</p>
   </section>
 
   <!-- SPIN (opened from the Breakfast tile) -->
@@ -591,6 +597,7 @@
     history: "breakfastWheel.history",
     days: "breakfastWheel.days",
     updatedAt: "breakfastWheel.updatedAt",
+    resetAt: "breakfastWheel.resetAt",
     sync: "breakfastWheel.sync",
     sound: "breakfastWheel.sound",
     legacyDk: "breakfastWheel.dkLastDate"
@@ -617,6 +624,8 @@
     history: load(KEYS.history, []),
     // Today's picks from the Home tiles: { "YYYY-MM-DD": { fruit: [...], colors: [...], feelings: [...], walk, animals, monsters } }
     days: load(KEYS.days, {}),
+    // Home picks made before this moment are hidden ("Start over" button).
+    resetAt: load(KEYS.resetAt, 0),
     updatedAt: load(KEYS.updatedAt, 0)
   };
   normalize(state);
@@ -632,6 +641,7 @@
     if (!s.days || typeof s.days !== "object" || Array.isArray(s.days)) s.days = {};
     const cutoff = ymd(new Date(Date.now() - 120 * 86400000)); // keep about 4 months of picks
     Object.keys(s.days).forEach(d => { if (d < cutoff) delete s.days[d]; });
+    s.resetAt = s.resetAt || 0;
     s.updatedAt = s.updatedAt || 0;
     return s;
   }
@@ -640,6 +650,7 @@
     save(KEYS.fruits, state.fruits);
     save(KEYS.history, state.history);
     save(KEYS.days, state.days);
+    save(KEYS.resetAt, state.resetAt);
     save(KEYS.updatedAt, state.updatedAt);
   }
 
@@ -899,7 +910,7 @@
   function showResult(meal) {
     const date = ymd(new Date());
     const fruit = state.fruits.length ? state.fruits[Math.floor(Math.random() * state.fruits.length)] : "";
-    const entry = { id: "day-" + date, date, mealId: meal.id, name: meal.name, emoji: meal.emoji, fruit };
+    const entry = { id: "day-" + date, date, at: Date.now(), mealId: meal.id, name: meal.name, emoji: meal.emoji, fruit };
     change(s => { s.history = s.history.filter(h => h.id !== entry.id); s.history.push(entry); });
 
     document.getElementById("big-emoji").textContent = meal.emoji || "🍽️";
@@ -1433,9 +1444,48 @@
 
   const todayKey = () => ymd(new Date());
   const picksFor = date => state.days[date] || {};
-  function breakfastOn(date) {
-    const list = state.history.filter(h => h.date === date);
-    return list[list.length - 1] || null;
+
+  // ---------- today's board ----------
+  // Each pick shows on Home for 18 hours after it was made (so evening picks are still there in the
+  // morning, and a morning's picks clear overnight), unless "Start over" was pressed after it.
+  const BOARD_MS = 18 * 3600000;
+  const isLive = at => at > (state.resetAt || 0) && Date.now() - at < BOARD_MS;
+  // When a pick was made. Picks saved before times were recorded count from the start of their day.
+  function pickTime(date, key) {
+    const d = state.days[date];
+    if (!d || !Array.isArray(d[key]) || !d[key].length) return 0;
+    return (d.at && d.at[key]) || parseYmd(date).getTime();
+  }
+  // The newest live picks for each question (18 hours can reach back into yesterday).
+  function boardPicks() {
+    const out = {};
+    const dates = [ymd(new Date()), ymd(new Date(Date.now() - 86400000))];
+    Object.keys(QUESTIONS).forEach(key => {
+      let bestAt = 0;
+      dates.forEach(d => {
+        const at = pickTime(d, key);
+        if (at > bestAt && isLive(at)) { bestAt = at; out[key] = state.days[d][key]; }
+      });
+    });
+    return out;
+  }
+  function boardBreakfast() {
+    let best = null, bestAt = 0;
+    state.history.forEach(h => {
+      const at = h.at || parseYmd(h.date).getTime();
+      if (isLive(at) && at >= bestAt) { best = h; bestAt = at; }
+    });
+    return best;
+  }
+  // Saves picks for a question into today's bucket with the time they were made.
+  function savePickList(key, sel) {
+    const date = todayKey(), at = Date.now(), list = sel.slice();
+    change(s => {
+      s.days[date] = Object.assign({}, s.days[date]);
+      s.days[date][key] = list.slice();
+      s.days[date].at = Object.assign({}, s.days[date].at);
+      s.days[date].at[key] = at;
+    });
   }
 
   function daysUntilHalloween() {
@@ -1453,7 +1503,7 @@
       hour < 12 ? "Good morning! ☀️" : hour < 17 ? "Good afternoon! 🌤️" : "Good evening! 🌙";
     const tiles = document.getElementById("tiles");
     tiles.innerHTML = "";
-    const picks = picksFor(todayKey());
+    const picks = boardPicks();
 
     TILE_ORDER.forEach(key => {
       if (key === "fruit" && !state.fruits.length) return;
@@ -1467,7 +1517,7 @@
       label.className = "tile-label";
 
       if (key === "breakfast") {
-        const bf = breakfastOn(todayKey());
+        const bf = boardBreakfast();
         b.classList.add("wide");
         b.style.setProperty("--tile", "#ffe6bf");
         icon.textContent = bf ? (bf.emoji || "🍽️") : "🎡";
@@ -1566,7 +1616,7 @@
   // Details for the grown-ups about today's breakfast.
   function renderPlate() {
     const card = document.getElementById("result");
-    const bf = breakfastOn(todayKey());
+    const bf = boardBreakfast();
     if (!bf) { card.classList.add("hidden"); return; }
     const meal = state.meals.find(m => m.id === bf.mealId) || { name: bf.name, emoji: bf.emoji, plate: [], tip: "" };
     document.getElementById("meal-name").textContent = (bf.emoji ? bf.emoji + " " : "") + bf.name;
@@ -1574,7 +1624,7 @@
       ? '<span class="note">Heavier meal</span><span class="tag">balance it out</span>' : "";
     const plate = document.getElementById("meal-plate");
     plate.innerHTML = "";
-    const fruitPicks = picksFor(todayKey()).fruit || [];
+    const fruitPicks = boardPicks().fruit || [];
     const fruitLine = fruitPicks.length ? "Fruit: " + fruitPicks.join(", ") + " ⭐ their pick!"
       : bf.fruit ? "Fruit: " + bf.fruit + " (or tap Fruit to let them choose)" : "";
     [...(meal.plate || []), ...(fruitLine ? [fruitLine] : [])].forEach(item => {
@@ -1658,7 +1708,7 @@
     const q = QUESTIONS[key];
     const options = q.options();
     pickKey = key;
-    pickSel = (picksFor(todayKey())[key] || []).filter(id => options.some(o => o.id === id));
+    pickSel = (boardPicks()[key] || []).filter(id => options.some(o => o.id === id));
     const title = typeof q.title === "function" ? q.title() : q.title;
     document.getElementById("kid-title").textContent = title;
     const banner = document.getElementById("kid-banner");
@@ -1693,11 +1743,7 @@
         popSound(on);
         if (q.checklist) {
           // Save each job as soon as it's tapped.
-          const date = todayKey(), sel = pickSel.slice();
-          change(s => {
-            s.days[date] = Object.assign({}, s.days[date]);
-            s.days[date][key] = sel.slice();
-          });
+          savePickList(key, pickSel);
           if (on && pickSel.length === options.length) {
             confetti();
             fanfare();
@@ -1729,12 +1775,9 @@
       say("Tap a picture first!");
       return;
     }
-    const date = todayKey(), key = pickKey, sel = pickSel.slice();
+    const key = pickKey, sel = pickSel.slice();
     closeOverlay();
-    change(s => {
-      s.days[date] = Object.assign({}, s.days[date]);
-      s.days[date][key] = sel.slice();
-    });
+    savePickList(key, sel);
     confetti();
     fanfare();
     say("Great job!");
@@ -2032,6 +2075,14 @@
     renderMenuEditor(null);
   });
 
+  document.getElementById("reset-board").addEventListener("click", () => {
+    if (!confirm("Start over? This clears today's breakfast spin and every pick on the Home screen. History keeps them.")) return;
+    const at = Date.now();
+    change(s => { s.resetAt = Math.max(s.resetAt || 0, at); });
+    window.scrollTo(0, 0);
+    say("Let's start over!");
+  });
+
   document.getElementById("clear-history").addEventListener("click", () => {
     if (!confirm("Clear all history, including the kids' picks? This also unlocks the once-a-week treats.")) return;
     change(s => { s.history = []; s.days = {}; });
@@ -2146,6 +2197,7 @@
     state.fruits = remote.fruits;
     state.history = remote.history;
     state.days = remote.days;
+    state.resetAt = remote.resetAt || 0;
     state.updatedAt = remote.updatedAt;
     saveLocal();
     refresh();
@@ -2325,14 +2377,18 @@
 
   // A fridge screen never gets "hidden", so check once a minute for a new day, a new part of the day
   // (Good morning → Good afternoon), and stale weather.
-  let lastDay = todayKey(), lastHello = document.getElementById("home-hello").textContent;
-  setInterval(() => {
+  // What Home is showing right now; when it changes (a pick turned 18 hours old, a new day), re-draw.
+  const boardSignature = () => {
     const hour = new Date().getHours();
-    const hello = hour < 12 ? "Good morning! ☀️" : hour < 17 ? "Good afternoon! 🌤️" : "Good evening! 🌙";
-    if (todayKey() !== lastDay || hello !== lastHello) {
-      lastDay = todayKey();
-      lastHello = hello;
-      if (!overlayMode && !spinning) refresh();
+    const bf = boardBreakfast();
+    return [todayKey(), hour < 12 ? "am" : hour < 17 ? "pm" : "eve", bf ? bf.id + bf.at : "", JSON.stringify(boardPicks())].join("|");
+  };
+  let lastBoard = boardSignature();
+  setInterval(() => {
+    const sig = boardSignature();
+    if (sig !== lastBoard && !overlayMode && !spinning) {
+      lastBoard = sig;
+      refresh();
     }
     if (!weatherFresh() && !weatherLoading) fetchWeather().catch(() => {});
   }, 60000);
