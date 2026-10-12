@@ -14,6 +14,10 @@ so the Home screen becomes "today at a glance". Each pick clears itself from Hom
 
 - **🎡 Spin for breakfast** — opens the wheel: big pictures, flashing lights, a clicking pointer, then confetti,
   a fanfare, and the breakfast read out loud. The last spin of the day is today's breakfast.
+- **📅 Today (calendar)** — today and tomorrow from your Google Calendar, kid style: a big picture for each
+  event (🏊 swim, 🏫 school, 🎂 birthday, 🦷 dentist, 👵 grandma…), morning/afternoon/evening, finished things
+  faded with ✓, and a **Now!** / **Next!** badge. Opening it reads the day aloud; tapping an event says when it is.
+  Only on synced devices — see [Calendar setup](#calendar-setup).
 - **☀️ Morning jobs** — a checklist: Eat breakfast, Go potty, Get dressed, Brush teeth. Each tap is saved right
   away ("Yay! You brushed your teeth!"), the tile shows how many are done, and finishing all four gets confetti
 - **🌦️ What to wear** — checks the weather for zip 43212 (Columbus, OH) and shows the clothes to put on:
@@ -91,3 +95,20 @@ The app is tuned to run on a Samsung Family Hub fridge (Tizen browser) and other
   (`?fridge=0` turns it off).
 - Because a fridge screen is always on, the app checks every minute for picks that have turned 18 hours old,
   a new greeting, and the Halloween countdown, and refreshes the weather every 30 minutes.
+
+## Calendar setup
+
+Browsers can't read Google Calendar directly, so a small Supabase Edge Function
+([`supabase/functions/calendar`](supabase/functions/calendar)) reads it on the server and gives the app only
+events from about a day ago to a few days ahead. It only answers devices that have the family's sync code.
+
+1. Tip: create a separate Google calendar (e.g. "Kids") with just the things your little one should see.
+2. On a computer: Google Calendar → ⚙️ Settings → click that calendar → **Integrate calendar** → copy
+   **Secret address in iCal format** (treat it like a password).
+3. Supabase → **kids-breakfast** project → **Edge Functions** → **Secrets** → add `CALENDAR_ICS_URL` with that
+   address. Several calendars can be combined by separating their addresses with spaces.
+4. In the app: ✏️ Menu → 📅 Calendar → **Refresh**. The 📅 Today tile appears on Home on every synced device.
+
+The function is deployed as `calendar` with JWT verification off because it checks the family code itself
+(it stores only a SHA-256 hash of allowed codes). If you make a new family code, add its hash to
+`ALLOWED_CODE_SHA256` and redeploy.
