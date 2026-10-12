@@ -228,6 +228,26 @@
     box-shadow: 0 6px 0 #a8321d, 0 10px 20px rgba(232,69,42,.3);
   }
   button.go.waiting { filter: grayscale(.9); opacity: .5; box-shadow: 0 6px 0 rgba(0,0,0,.2); }
+  /* Calendar: today + tomorrow */
+  .cal-days { display: grid; grid-template-columns: 1fr; grid-gap: 18px; gap: 18px; width: 100%; text-align: left; margin-top: 4px; }
+  .cal-day h2 { margin: 0; font-size: 1.8rem; }
+  .cal-day .cal-date { color: var(--muted); margin: 0 0 10px; }
+  .cal-item {
+    display: flex; align-items: center; width: 100%; text-align: left; position: relative;
+    background: var(--card); color: var(--ink); border: 4px solid var(--border); border-radius: 20px;
+    padding: 10px 14px; margin: 0 0 12px; box-shadow: 0 4px 0 rgba(0,0,0,.1); font-size: 1.2rem;
+  }
+  .cal-item .cal-pic { font-size: 52px; line-height: 1; width: 64px; text-align: center; flex: none; margin-right: 12px; }
+  .cal-item .cal-title { display: block; }
+  .cal-item .cal-when { display: block; color: var(--muted); font-size: .95rem; font-weight: normal; margin-top: 2px; }
+  .cal-item.past { opacity: .45; }
+  .cal-item.next { border-color: var(--accent); }
+  .cal-item .cal-badge {
+    position: absolute; top: -12px; right: 14px; background: var(--accent); color: #fff;
+    border-radius: 999px; padding: 2px 12px; font-size: .9rem;
+  }
+  .cal-empty { font-size: 1.2rem; padding: 16px; border: 3px dashed var(--border); border-radius: 20px; text-align: center; }
+  .tile.cal-tile .tile-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .count-num { font-size: 7rem; font-size: clamp(5rem, 32vw, 10rem); font-weight: bold; line-height: 1; color: #f57c00; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both; }
   .pumpkins { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; font-size: 32px; max-width: 380px; margin: 10px auto; }
   .pumpkins span { animation: pop .3s both; }
@@ -300,6 +320,7 @@
     .pick-grid { grid-template-columns: repeat(4, 1fr); }
     .pick-grid.cols-3 { grid-template-columns: repeat(6, 1fr); }
     .wheel-wrap { width: 70vh; max-width: 640px; }
+    .cal-days { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
@@ -402,6 +423,27 @@
       <textarea id="fruit-editor" rows="8"></textarea>
     </div>
 
+    <div class="card" id="cal-card">
+      <h3>📅 Calendar</h3>
+      <p id="cal-status" style="margin-top:0"></p>
+      <p class="note" style="margin-top:0">Shows today and tomorrow from your Google Calendar on the Home screen,
+        kid-style. It works on devices that are synced (it uses the family code).</p>
+      <details>
+        <summary class="note" style="cursor:pointer">How to connect it</summary>
+        <ol class="note" style="padding-left:20px">
+          <li>Tip: make a separate Google calendar (like "Kids") with only the things your little one should see.</li>
+          <li>On a computer, open Google Calendar → ⚙️ Settings → click that calendar on the left →
+            <b>Integrate calendar</b> → copy <b>Secret address in iCal format</b>.</li>
+          <li>In Supabase, open the <b>kids-breakfast</b> project → <b>Edge Functions</b> → <b>Secrets</b>, and add
+            <b>CALENDAR_ICS_URL</b> with that address (several addresses can be separated by spaces).</li>
+          <li>Come back here and tap <b>Refresh</b>.</li>
+        </ol>
+      </details>
+      <div class="controls" style="margin-bottom:0">
+        <button id="cal-refresh" class="secondary small" type="button">🔄 Refresh calendar</button>
+      </div>
+    </div>
+
     <div class="card" id="sync-card">
       <h3>☁️ Sync across devices</h3>
       <div id="sync-off">
@@ -460,6 +502,10 @@
         <div id="kid-banner"></div>
         <p class="kid-sub" id="kid-sub">Tap as many as you like!</p>
         <div class="pick-grid" id="kid-grid"></div>
+      </div>
+
+      <div id="kid-calendar" class="hidden" style="width:100%">
+        <div class="cal-days" id="cal-days"></div>
       </div>
 
       <div id="kid-halloween" class="hidden">
@@ -1431,7 +1477,7 @@
     animals: { label: "Animal", icon: "🐶", tile: "#ffeedd", cols: 3, title: "What's your favorite animal today?", options: () => ANIMALS },
     monsters: { label: "Monster", icon: "👾", tile: "#ece4fb", cols: 3, title: "What's your favorite monster today?", options: () => MONSTERS }
   };
-  const TILE_ORDER = ["breakfast", "morning", "wear", "fruit", "feelings", "colors", "walk", "animals", "monsters", "halloween"];
+  const TILE_ORDER = ["breakfast", "calendar", "morning", "wear", "fruit", "feelings", "colors", "walk", "animals", "monsters", "halloween"];
 
   // Find the option for a saved pick (fruits are saved as their text, so they still draw if the list changes).
   function findOption(key, id) {
@@ -1496,6 +1542,202 @@
     return Math.round((h - today) / 86400000);
   }
 
+  // ---------- calendar: today + tomorrow, kid style ----------
+  // Events come from the "calendar" Supabase function, which reads the family's Google Calendar
+  // (see supabase/functions/calendar). It needs the family code, so only synced devices show it.
+  const CAL_KEY = "breakfastWheel.calendar";
+  let cal = load(CAL_KEY, null); // { at, events: [{ title, allDay, start, end }], error? }
+  let calLoading = null;
+  const calFresh = () => !!cal && Date.now() - cal.at < 15 * 60000;
+
+  function fetchCalendar() {
+    if (!sync.cfg) return Promise.reject(new Error("not_synced"));
+    if (calLoading) return calLoading;
+    const headers = { "Content-Type": "application/json", apikey: sync.cfg.key };
+    if (sync.cfg.key.indexOf("eyJ") === 0) headers.Authorization = "Bearer " + sync.cfg.key;
+    calLoading = fetch(sync.cfg.url.replace(/\/+$/, "") + "/functions/v1/calendar", {
+      method: "POST", headers, body: JSON.stringify({ code: sync.cfg.code })
+    })
+      .then(r => r.json().catch(() => ({})).then(body => {
+        if (!r.ok) throw new Error(body.error || "calendar " + r.status);
+        return body;
+      }))
+      .then(body => {
+        calLoading = null;
+        cal = { at: Date.now(), events: body.events || [] };
+        save(CAL_KEY, cal);
+        renderHome();
+        renderCalStatus();
+        return cal;
+      }, e => {
+        calLoading = null;
+        const msg = String((e && e.message) || e);
+        // Remember setup problems so the tile can say so; keep old events if it's just a network blip.
+        if (msg === "not_configured" || msg === "forbidden") {
+          cal = { at: Date.now(), events: [], error: msg };
+          save(CAL_KEY, cal);
+        } else if (cal) cal.offline = true;
+        renderHome();
+        renderCalStatus();
+        throw e;
+      });
+    return calLoading;
+  }
+
+  // Pictures for common kid things; anything else gets a star.
+  const CAL_PICS = [
+    [/birthday|bday/i, "🎂"], [/party/i, "🎉"], [/halloween|trick.or.treat|costume/i, "🎃"],
+    [/swim|\bpool\b/i, "🏊"], [/soccer/i, "⚽"], [/baseball|t-?ball/i, "⚾"], [/basketball/i, "🏀"],
+    [/\bgym\b|tumbl|gymnast/i, "🤸"], [/dance|ballet/i, "💃"], [/music|piano|guitar|sing/i, "🎵"],
+    [/\b(art|paint|crafts?)\b/i, "🎨"], [/dentist|teeth/i, "🦷"], [/doctor|\bdr\b|check-?up|pediatric|clinic/i, "🩺"],
+    [/haircut|hair cut|barber/i, "💇"], [/\bshots?\b|vaccine|flu/i, "💉"],
+    [/daycare|day care|nursery/i, "🧸"], [/school|preschool|pre-?k|kindergarten|\bclass\b/i, "🏫"],
+    [/grandma|nana|granny|mimi|gigi/i, "👵"], [/grandpa|papa|poppy|pawpaw/i, "👴"],
+    [/play ?date|friend/i, "🧒"], [/\bzoo\b/i, "🦁"], [/park|playground/i, "🌳"],
+    [/library|story ?time|\bbooks?\b/i, "📚"], [/museum/i, "🏛️"], [/farm|pumpkin patch|orchard|apple picking/i, "🚜"],
+    [/church|\bmass\b|temple|synagogue/i, "⛪"], [/movie/i, "🎬"], [/beach/i, "🏖️"], [/\bcamp/i, "🏕️"],
+    [/trip|flight|airport|vacation/i, "✈️"], [/\bvet\b/i, "🐶"], [/\bbath\b/i, "🛁"], [/\bnap\b/i, "😴"],
+    [/bed ?time|sleep/i, "🛏️"], [/breakfast/i, "🥞"], [/lunch/i, "🥪"], [/dinner|supper/i, "🍽️"],
+    [/pizza/i, "🍕"], [/ice cream/i, "🍦"], [/grocer|store|shopping/i, "🛒"], [/\bwalk\b/i, "🚶"],
+    [/\bbike\b/i, "🚲"], [/work|office|meeting/i, "💼"], [/clean/i, "🧹"], [/visit/i, "🏠"]
+  ];
+  function calPic(title) {
+    for (let i = 0; i < CAL_PICS.length; i++) if (CAL_PICS[i][0].test(title)) return CAL_PICS[i][1];
+    return "⭐";
+  }
+
+  // Events on this device's today (0) or tomorrow (1), all-day ones first.
+  function calDay(offset) {
+    const d0 = new Date();
+    d0.setHours(0, 0, 0, 0);
+    d0.setDate(d0.getDate() + offset);
+    const d1 = new Date(d0.getTime());
+    d1.setDate(d1.getDate() + 1);
+    const key = ymd(d0), a = d0.getTime(), b = d1.getTime();
+    return ((cal && cal.events) || []).filter(e => {
+      if (e.allDay) return e.start <= key && key < (e.end > e.start ? e.end : key + "~");
+      const s = Date.parse(e.start), en = Date.parse(e.end);
+      return s < b && (en > a || (en === s && s >= a));
+    }).sort((x, y) => (x.allDay === y.allDay ? (x.start < y.start ? -1 : 1) : x.allDay ? -1 : 1));
+  }
+
+  const timeLabel = ms => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  function partOfDay(ms) {
+    const h = new Date(ms).getHours();
+    return h < 12 ? "☀️ Morning" : h < 17 ? "🌤️ Afternoon" : "🌙 Evening";
+  }
+  function calWhen(e) {
+    return e.allDay ? "🌈 All day" : partOfDay(Date.parse(e.start)) + " · " + timeLabel(Date.parse(e.start));
+  }
+  // Index of the event happening now or next today (timed events only), or -1.
+  function calNextIndex(list) {
+    const now = Date.now();
+    for (let i = 0; i < list.length; i++) {
+      if (!list[i].allDay && Date.parse(list[i].end) > now) return i;
+    }
+    return -1;
+  }
+  const calShort = t => (t.length > 18 ? t.slice(0, 17) + "…" : t);
+
+  function openCalendar() {
+    const show = () => {
+      if (overlayMode) return;
+      renderCalendarView();
+      openOverlay("calendar");
+      const say1 = (label, list) => label + ": " + (list.length ? list.map(e => e.title).join(", then ") : "nothing planned") + ".";
+      say(cal && cal.error ? "The calendar isn't set up yet." : say1("Today", calDay(0)) + " " + say1("Tomorrow", calDay(1)));
+    };
+    if (calFresh() || !sync.cfg) return show();
+    const loading = fetchCalendar();
+    renderHome();
+    Promise.race([loading, new Promise(r => setTimeout(r, 6000))]).catch(() => {}).then(show);
+  }
+
+  function renderCalendarView() {
+    const root = document.getElementById("cal-days");
+    root.innerHTML = "";
+    if (cal && cal.error) {
+      const msg = document.createElement("div");
+      msg.className = "cal-empty";
+      msg.textContent = cal.error === "not_configured"
+        ? "📅 The calendar isn't connected yet. A grown-up can set it up in Menu → Calendar."
+        : "📅 This device can't open the calendar. A grown-up can check Menu → Calendar.";
+      root.appendChild(msg);
+      return;
+    }
+    if (!cal) {
+      const msg = document.createElement("div");
+      msg.className = "cal-empty";
+      msg.textContent = "📅 Couldn't load the calendar right now. Try again in a bit!";
+      root.appendChild(msg);
+      return;
+    }
+    [0, 1].forEach(offset => {
+      const day = new Date();
+      day.setDate(day.getDate() + offset);
+      const col = document.createElement("div");
+      col.className = "cal-day";
+      const h = document.createElement("h2");
+      h.textContent = offset === 0 ? "Today" : "Tomorrow";
+      const sub = document.createElement("p");
+      sub.className = "cal-date";
+      sub.textContent = day.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+      col.append(h, sub);
+      const list = calDay(offset);
+      const nextIdx = offset === 0 ? calNextIndex(list) : -1;
+      if (!list.length) {
+        const empty = document.createElement("div");
+        empty.className = "cal-empty";
+        empty.textContent = "🎈 Nothing planned — a free day!";
+        col.appendChild(empty);
+      }
+      list.forEach((e, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "cal-item";
+        const now = Date.now();
+        if (offset === 0 && !e.allDay && Date.parse(e.end) <= now) b.classList.add("past");
+        if (i === nextIdx) {
+          b.classList.add("next");
+          const badge = document.createElement("span");
+          badge.className = "cal-badge";
+          badge.textContent = Date.parse(e.start) <= now ? "Now!" : "Next!";
+          b.appendChild(badge);
+        }
+        const pic = document.createElement("span");
+        pic.className = "cal-pic";
+        pic.textContent = calPic(e.title);
+        const text = document.createElement("span");
+        const title = document.createElement("span");
+        title.className = "cal-title";
+        title.textContent = e.title;
+        const when = document.createElement("span");
+        when.className = "cal-when";
+        when.textContent = (b.classList.contains("past") ? "✓ Done · " : "") + calWhen(e);
+        text.append(title, when);
+        b.append(pic, text);
+        b.addEventListener("click", () => {
+          popSound(true);
+          say(e.allDay ? "All day: " + e.title + "!" : "At " + timeLabel(Date.parse(e.start)) + ": " + e.title + "!");
+        });
+        col.appendChild(b);
+      });
+      root.appendChild(col);
+    });
+  }
+
+  function renderCalStatus() {
+    const el = document.getElementById("cal-status");
+    if (!el) return;
+    if (!sync.cfg) el.textContent = "Turn on ☁️ Sync below first — the calendar uses the family code.";
+    else if (calLoading && !cal) el.textContent = "Checking…";
+    else if (!cal) el.textContent = "Not loaded yet — tap Refresh.";
+    else if (cal.error === "not_configured") el.textContent = "Not connected yet — follow the steps below.";
+    else if (cal.error === "forbidden") el.textContent = "⚠️ This family code isn't allowed to read the calendar.";
+    else el.textContent = (cal.offline ? "⚠️ Offline — showing what we had. " : "Connected ✅ ") +
+      calDay(0).length + " today, " + calDay(1).length + " tomorrow · updated " + timeLabel(cal.at);
+  }
+
   // ---------- home ----------
   function renderHome() {
     const hour = new Date().getHours();
@@ -1507,6 +1749,7 @@
 
     TILE_ORDER.forEach(key => {
       if (key === "fruit" && !state.fruits.length) return;
+      if (key === "calendar" && !sync.cfg) return; // needs the family code
       const b = document.createElement("button");
       b.type = "button";
       b.className = "tile";
@@ -1533,6 +1776,40 @@
         label.textContent = n === 0 ? "It's Halloween!" : n + (n === 1 ? " day" : " days") + " to Halloween";
         b.append(icon, label);
         b.addEventListener("click", openHalloween);
+      } else if (key === "calendar") {
+        // Wide tile: today's things in a row (faded once they're over) and what's next.
+        b.classList.add("wide", "stack", "cal-tile");
+        b.style.setProperty("--tile", "#e8f0ff");
+        const head = document.createElement("span");
+        head.className = "tile-label";
+        head.textContent = "📅 Today";
+        const today = calDay(0), nextIdx = calNextIndex(today);
+        const row = document.createElement("span");
+        row.className = "tile-picks compact";
+        today.slice(0, 4).forEach(e => {
+          const m = miniArt({ name: e.title, emoji: calPic(e.title) });
+          if (!e.allDay && Date.parse(e.end) <= Date.now()) m.style.opacity = ".3";
+          row.appendChild(m);
+        });
+        if (today.length > 4) {
+          const more = document.createElement("span");
+          more.className = "more";
+          more.textContent = "+" + (today.length - 4);
+          row.appendChild(more);
+        }
+        if (cal && cal.error === "not_configured") label.textContent = "Calendar not connected yet";
+        else if (!cal) label.textContent = calLoading ? "Checking the calendar…" : "Tap to see the calendar";
+        else if (nextIdx >= 0) {
+          const n = today[nextIdx];
+          label.textContent = (Date.parse(n.start) <= Date.now() ? "Now: " : "Next: ") + calPic(n.title) + " " +
+            calShort(n.title) + " · " + timeLabel(Date.parse(n.start));
+        } else if (today.length) label.textContent = "All done today! 🎉";
+        else {
+          const tm = calDay(1);
+          label.textContent = tm.length ? "Free day! Tomorrow: " + calPic(tm[0].title) + " " + calShort(tm[0].title) : "Nothing planned — free day!";
+        }
+        b.append(head, row, label);
+        b.addEventListener("click", openCalendar);
       } else if (key === "wear") {
         // Wide tile: today's weather plus the clothes to put on, faded until they're on.
         const opts = wearOptions();
@@ -1651,7 +1928,7 @@
 
   // ---------- full-screen kid dialogs ----------
   // While one is open the page behind it is pinned in place so little fingers can't scroll it.
-  let overlayMode = null; // "meal" | "pick" | "halloween"
+  let overlayMode = null; // "meal" | "pick" | "halloween" | "calendar"
   let pickKey = null;
   let pickSel = [];
   let lockedY = 0;
@@ -1669,7 +1946,7 @@
 
   function openOverlay(mode) {
     overlayMode = mode;
-    ["meal", "pick", "halloween"].forEach(m =>
+    ["meal", "pick", "halloween", "calendar"].forEach(m =>
       document.getElementById("kid-" + m).classList.toggle("hidden", m !== mode));
     const done = document.getElementById("kid-done");
     const checklist = mode === "pick" && QUESTIONS[pickKey].checklist;
@@ -2237,7 +2514,7 @@
   function connectWith(cfg) {
     const err = document.getElementById("sync-error");
     err.classList.add("hidden");
-    return sync.connect(cfg).catch(e => {
+    return sync.connect(cfg).then(() => fetchCalendar().catch(() => {})).catch(e => {
       console.warn(e);
       sync.cfg = null;
       sync.setStatus("local");
@@ -2281,7 +2558,7 @@
   // (even if the page started to scroll a bit), and holding still for HOLD ms counts as a tap right away.
   // Only a real swipe scrolls. Desktop mouse clicks are untouched.
   (function () {
-    const SEL = ".tile, .pick, #kid-done, #kid-close, #spin, #wheel-wrap, #spin-home, .tabs button, #sound";
+    const SEL = ".tile, .pick, .cal-item, #kid-done, #kid-close, #spin, #wheel-wrap, #spin-home, .tabs button, #sound";
     const SLOP = 30, HOLD = 550;
     let t = null; // { el, x, y, moved, timer, fired }
 
@@ -2374,6 +2651,13 @@
   window.addEventListener("hashchange", handleSetupLink);
   if (!handleSetupLink() && sync.cfg) sync.pull();
   if (!weatherFresh()) fetchWeather().catch(() => {});
+  if (sync.cfg && !calFresh()) fetchCalendar().catch(() => {});
+  renderCalStatus();
+  document.getElementById("cal-refresh").addEventListener("click", () => {
+    if (!sync.cfg) return renderCalStatus();
+    fetchCalendar().catch(() => {});
+    renderCalStatus();
+  });
 
   // A fridge screen never gets "hidden", so check once a minute for a new day, a new part of the day
   // (Good morning → Good afternoon), and stale weather.
@@ -2381,7 +2665,9 @@
   const boardSignature = () => {
     const hour = new Date().getHours();
     const bf = boardBreakfast();
-    return [todayKey(), hour < 12 ? "am" : hour < 17 ? "pm" : "eve", bf ? bf.id + bf.at : "", JSON.stringify(boardPicks())].join("|");
+    const today = calDay(0);
+    return [todayKey(), hour < 12 ? "am" : hour < 17 ? "pm" : "eve", bf ? bf.id + bf.at : "", JSON.stringify(boardPicks()),
+      calNextIndex(today), today.filter(e => !e.allDay && Date.parse(e.end) <= Date.now()).length].join("|");
   };
   let lastBoard = boardSignature();
   setInterval(() => {
@@ -2391,6 +2677,7 @@
       refresh();
     }
     if (!weatherFresh() && !weatherLoading) fetchWeather().catch(() => {});
+    if (sync.cfg && !calFresh() && !calLoading) fetchCalendar().catch(() => {});
   }, 60000);
 
   // Keep devices in step: check for changes every 15s while the page is open, and when it comes back.
