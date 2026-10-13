@@ -251,6 +251,11 @@
   .count-num { font-size: 7rem; font-size: clamp(5rem, 32vw, 10rem); font-weight: bold; line-height: 1; color: #f57c00; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both; }
   .pumpkins { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; font-size: 32px; max-width: 380px; margin: 10px auto; }
   .pumpkins span { animation: pop .3s both; }
+  button.hw-video {
+    margin: 14px auto 4px; font-size: 1.5rem; padding: 16px 32px;
+    background: linear-gradient(180deg, #8e44ad, #5e2a84); color: #fff;
+    box-shadow: 0 6px 0 #3d1a57, 0 10px 20px rgba(94,42,132,.3);
+  }
   .dot { display: inline-block; width: 1em; height: 1em; border-radius: 50%; border: 2px solid rgba(0,0,0,.15); vertical-align: -0.15em; }
   @keyframes bounce-in { 0% { transform: scale(0) rotate(-30deg) } 100% { transform: scale(1) rotate(0) } }
   @keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
@@ -423,6 +428,17 @@
       <textarea id="fruit-editor" rows="8"></textarea>
     </div>
 
+    <div class="card" id="hw-card">
+      <h3>🎃 Halloween video</h3>
+      <p class="note" style="margin-top:0">A link (like a Google Photos share link) that opens from a big button on the
+        Halloween screen. It's saved with your synced family data, not in the app's public code.</p>
+      <div class="row">
+        <div><input id="hw-video-url" type="url" placeholder="https://photos.app.goo.gl/…" autocomplete="off"></div>
+        <button id="hw-video-save" class="secondary small" type="button" style="flex:none">Save</button>
+      </div>
+      <p id="hw-video-status" class="note"></p>
+    </div>
+
     <div class="card" id="cal-card">
       <h3>📅 Calendar</h3>
       <p id="cal-status" style="margin-top:0"></p>
@@ -512,6 +528,7 @@
         <div class="count-num" id="hw-num"></div>
         <h2 class="kid-title" id="hw-text"></h2>
         <div class="pumpkins" id="hw-pumpkins"></div>
+        <button id="hw-video" class="hw-video hidden" type="button">▶️ Watch our Halloween video!</button>
       </div>
 
     </div>
@@ -644,6 +661,7 @@
     days: "breakfastWheel.days",
     updatedAt: "breakfastWheel.updatedAt",
     resetAt: "breakfastWheel.resetAt",
+    halloweenVideo: "breakfastWheel.halloweenVideo",
     sync: "breakfastWheel.sync",
     sound: "breakfastWheel.sound",
     legacyDk: "breakfastWheel.dkLastDate"
@@ -672,6 +690,8 @@
     days: load(KEYS.days, {}),
     // Home picks made before this moment are hidden ("Start over" button).
     resetAt: load(KEYS.resetAt, 0),
+    // Link opened from the Halloween screen (kept in family data, not in the public code).
+    halloweenVideo: load(KEYS.halloweenVideo, ""),
     updatedAt: load(KEYS.updatedAt, 0)
   };
   normalize(state);
@@ -688,6 +708,7 @@
     const cutoff = ymd(new Date(Date.now() - 120 * 86400000)); // keep about 4 months of picks
     Object.keys(s.days).forEach(d => { if (d < cutoff) delete s.days[d]; });
     s.resetAt = s.resetAt || 0;
+    s.halloweenVideo = typeof s.halloweenVideo === "string" ? s.halloweenVideo : "";
     s.updatedAt = s.updatedAt || 0;
     return s;
   }
@@ -697,6 +718,7 @@
     save(KEYS.history, state.history);
     save(KEYS.days, state.days);
     save(KEYS.resetAt, state.resetAt);
+    save(KEYS.halloweenVideo, state.halloweenVideo);
     save(KEYS.updatedAt, state.updatedAt);
   }
 
@@ -2077,6 +2099,7 @@
       sp.style.animationDelay = Math.min(i * 0.04, 1.5) + "s";
       row.appendChild(sp);
     });
+    document.getElementById("hw-video").classList.toggle("hidden", !/^https:\/\//.test(state.halloweenVideo));
     openOverlay("halloween");
     if (n === 0) confetti();
     fanfare();
@@ -2352,6 +2375,24 @@
     renderMenuEditor(null);
   });
 
+  document.getElementById("hw-video").addEventListener("click", () => {
+    if (!/^https:\/\//.test(state.halloweenVideo)) return;
+    fanfare();
+    window.open(state.halloweenVideo, "_blank", "noopener");
+  });
+  function renderHalloweenVideoSetting() {
+    const input = document.getElementById("hw-video-url");
+    if (document.activeElement !== input) input.value = state.halloweenVideo;
+    document.getElementById("hw-video-status").textContent = state.halloweenVideo
+      ? "✅ The Halloween screen shows a “Watch our Halloween video!” button." : "No video yet.";
+  }
+  document.getElementById("hw-video-save").addEventListener("click", () => {
+    const v = document.getElementById("hw-video-url").value.trim();
+    if (v && !/^https:\/\/\S+$/.test(v)) { alert("Please paste a link that starts with https://"); return; }
+    change(s => { s.halloweenVideo = v; });
+    renderHalloweenVideoSetting();
+  });
+
   document.getElementById("reset-board").addEventListener("click", () => {
     if (!confirm("Start over? This clears today's breakfast spin and every pick on the Home screen. History keeps them.")) return;
     const at = Date.now();
@@ -2475,6 +2516,7 @@
     state.history = remote.history;
     state.days = remote.days;
     state.resetAt = remote.resetAt || 0;
+    state.halloweenVideo = remote.halloweenVideo || "";
     state.updatedAt = remote.updatedAt;
     saveLocal();
     refresh();
@@ -2558,7 +2600,7 @@
   // (even if the page started to scroll a bit), and holding still for HOLD ms counts as a tap right away.
   // Only a real swipe scrolls. Desktop mouse clicks are untouched.
   (function () {
-    const SEL = ".tile, .pick, .cal-item, #kid-done, #kid-close, #spin, #wheel-wrap, #spin-home, .tabs button, #sound";
+    const SEL = ".tile, .pick, .cal-item, #hw-video, #kid-done, #kid-close, #spin, #wheel-wrap, #spin-home, .tabs button, #sound";
     const SLOP = 30, HOLD = 550;
     let t = null; // { el, x, y, moved, timer, fired }
 
@@ -2626,7 +2668,7 @@
     });
   });
 
-  function refresh() { draw(); renderHome(); renderHistory(); }
+  function refresh() { draw(); renderHome(); renderHistory(); renderHalloweenVideoSetting(); }
 
   document.getElementById("spin").addEventListener("click", spin);
   document.getElementById("wheel-wrap").addEventListener("click", spin);

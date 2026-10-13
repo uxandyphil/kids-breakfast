@@ -36,7 +36,10 @@ so the Home screen becomes "today at a glance". Each pick clears itself from Hom
   Sea Monster, Robot Monster, Mummy, Yeti, Cyclops, Slime Monster, Ogre, Goblin, Skeleton, Witch, Werewolf,
   Pumpkin Monster, Loch Ness Monster, Giant Spider, Bat Monster, Genie. Troll, Mummy, Yeti, Cyclops, and Slime
   are drawn pictures, so they show up on every phone.
-- **🎃 Halloween** — how many days until Halloween, with one pumpkin per day to count
+- **🎃 Halloween** — how many days until Halloween, with one pumpkin per day to count, plus a big
+  "▶️ Watch our Halloween video!" button when a video link is set in ✏️ Menu → 🎃 Halloween video (the link is
+  stored with your synced family data, not in this public code; Google Photos videos open in a new tab because
+  Google doesn't allow them to be embedded)
 
 Every question is multi-select with big cards that bounce and are read aloud. **Done** only works once at least
 one picture is chosen (otherwise the cards wiggle and it says "Tap a picture first!"). The button stays pinned
