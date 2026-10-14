@@ -26,7 +26,9 @@ so the Home screen becomes "today at a glance". Each pick clears itself from Hom
   forecast (no account needed), refreshed every 30 minutes. To use a different place, change `WEATHER_PLACE`
   in `index.html`.
 - **🍓 Fruit** — Blueberries, Blackberries, Bananas, Raspberries (edit the list in the Menu tab)
-- **😊 Feelings** — 12 feelings: Happy, Excited, Silly, Loved, Proud, Calm, Sleepy, Hungry, Shy, Sad, Mad, Scared
+- **😊 Feelings** — 28 feelings: Happy, Excited, Silly, Laughing, Loved, Huggy, Proud, Brave, Thankful, Calm,
+  Curious, Surprised, Sleepy, Hungry, Thirsty, Cold, Hot, Bored, Shy, Confused, Worried, Scared, Lonely, Sad,
+  Frustrated, Mad, Sick, Owie
 - **🎨 Colors** — 12 colors including Rainbow
 - **🛴 Walk** — what to take on the morning walk: Scooter, Bike, Wagon, Stroller
 - **🐶 Animal** — favorite animal today (40 animals). Each one makes its noise when tapped ("Dog! Woof woof!"),
