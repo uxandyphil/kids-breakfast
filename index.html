@@ -185,6 +185,9 @@
   .kid-banner .wx-meta { color: var(--muted); font-size: .95rem; margin-top: 4px; }
   .pick-grid { display: grid; grid-gap: 14px; gap: 14px; width: 100%; margin: 10px 0 8px; grid-template-columns: repeat(2, 1fr); }
   .pick-grid.cols-3 { grid-template-columns: repeat(3, 1fr); grid-gap: 12px; gap: 12px; }
+  .pick-grid.single, .pick-grid.cols-3.single { grid-template-columns: minmax(0, 280px); justify-content: center; }
+  .pick-grid.single .pick .art { height: 170px; }
+  .pick-grid.single .pick .art-emoji { font-size: 140px; }
   .pick-grid.shake { animation: shake .45s; }
   @keyframes shake { 0%, 100% { transform: translateX(0) } 20%, 60% { transform: translateX(-10px) } 40%, 80% { transform: translateX(10px) } }
   .pick {
@@ -427,6 +430,12 @@
         (start a line with an emoji to give it a picture). If they skip, a random one is suggested.</p>
       <textarea id="fruit-editor" rows="8"></textarea>
     </div>
+    <div class="card">
+      <h3>🧹 Chores</h3>
+      <p class="note" style="margin-top:0">One per line, shown as a checklist on the Home screen
+        (start a line with an emoji to give it a picture).</p>
+      <textarea id="chores-editor" rows="4"></textarea>
+    </div>
 
     <div class="card" id="hw-card">
       <h3>🎃 Halloween video</h3>
@@ -611,6 +620,8 @@
   ];
 
   // Lines without an emoji get a drawn picture when we know the fruit (raspberries, blackberries).
+  // Chores are editable in the Menu tab, one per line (a leading emoji becomes the picture).
+  const DEFAULT_CHORES = ["🧸 Clean up toys"];
   const DEFAULT_FRUITS = ["🫐 Blueberries", "Blackberries", "🍌 Bananas", "Raspberries"];
   const OLD_DEFAULT_FRUITS = [
     "🍓 Strawberries", "🫐 Blueberries", "🍌 Banana", "🍎 Apple slices", "🍊 Clementine / orange",
@@ -675,6 +686,7 @@
   const KEYS = {
     meals: "breakfastWheel.meals",
     fruits: "breakfastWheel.fruits",
+    chores: "breakfastWheel.chores",
     history: "breakfastWheel.history",
     days: "breakfastWheel.days",
     updatedAt: "breakfastWheel.updatedAt",
@@ -702,6 +714,7 @@
   const state = {
     meals: load(KEYS.meals, clone(DEFAULT_MEALS)),
     fruits: load(KEYS.fruits, DEFAULT_FRUITS.slice()),
+    chores: load(KEYS.chores, DEFAULT_CHORES.slice()),
     // [{id, date: "YYYY-MM-DD", mealId, name, emoji, fruit, fruits?, colors?, feelings?}]
     history: load(KEYS.history, []),
     // Today's picks from the Home tiles: { "YYYY-MM-DD": { fruit: [...], colors: [...], feelings: [...], walk, animals, monsters } }
@@ -716,6 +729,7 @@
 
   function normalize(s) {
     if (!Array.isArray(s.meals) || !s.meals.length) s.meals = clone(DEFAULT_MEALS);
+    if (!Array.isArray(s.chores)) s.chores = DEFAULT_CHORES.slice();
     if (!Array.isArray(s.fruits) || JSON.stringify(s.fruits) === JSON.stringify(OLD_DEFAULT_FRUITS)) {
       s.fruits = DEFAULT_FRUITS.slice();
     }
@@ -733,6 +747,7 @@
   function saveLocal() {
     save(KEYS.meals, state.meals);
     save(KEYS.fruits, state.fruits);
+    save(KEYS.chores, state.chores);
     save(KEYS.history, state.history);
     save(KEYS.days, state.days);
     save(KEYS.resetAt, state.resetAt);
@@ -1486,6 +1501,13 @@
     return el;
   }
 
+  // "🧸 Clean up toys" -> a card with the teddy bear; plain text gets a broom.
+  function choreOption(text) {
+    const parts = splitLabel(text);
+    return { id: text, name: parts.name, emoji: parts.emoji || "🧹", cheer: "Yay! " + parts.name + " — done!" };
+  }
+  const choreOptions = () => state.chores.map(choreOption);
+
   const MORNING = [
     { id: "breakfast", name: "Eat breakfast", emoji: "🥣", cheer: "You ate breakfast!" },
     { id: "potty", name: "Go potty", emoji: "🚽", cheer: "You went potty!" },
@@ -1497,7 +1519,13 @@
     // A checklist: each tap saves right away, and finishing all of them gets a big celebration.
     morning: {
       label: "Morning", icon: "☀️", tile: "#fff1b8", cols: 2, title: "Morning jobs!", checklist: true,
-      sub: "Tap each one when you've done it!", options: () => MORNING
+      sub: "Tap each one when you've done it!", options: () => MORNING,
+      allDone: "Yay! All done! You did your whole morning!", tileDone: "Morning all done!", tileCount: "Morning jobs"
+    },
+    chores: {
+      label: "Chores", icon: "🧹", tile: "#e0f5ec", cols: 2, title: "Chore time!", checklist: true,
+      sub: "Tap each one when it's done!", options: choreOptions,
+      allDone: "Yay! All your chores are done! Great helping!", tileDone: "Chores all done!", tileCount: "Chores"
     },
     wear: {
       label: "Wear", icon: "🌦️", tile: "#d9f2ff", cols: 3, checklist: true, catalog: WEAR_ITEMS,
@@ -1505,7 +1533,8 @@
       speak: () => weather
         ? "It's " + weather.temp + " degrees and " + weatherLook(weather.code)[1] + "! What should you wear?"
         : "What should you wear today?",
-      sub: "Tap each one when it's on!", banner: weatherBanner, options: wearOptions
+      sub: "Tap each one when it's on!", banner: weatherBanner, options: wearOptions,
+      allDone: "Yay! You're all dressed for the weather!"
     },
     fruit: {
       label: "Fruit", icon: "🍓", tile: "#ffe0e6", cols: 2, title: "What fruit do you want?",
@@ -1517,7 +1546,7 @@
     animals: { label: "Animal", icon: "🐶", tile: "#ffeedd", cols: 3, title: "What's your favorite animal today?", options: () => ANIMALS },
     monsters: { label: "Monster", icon: "👾", tile: "#ece4fb", cols: 3, title: "What's your favorite monster today?", options: () => MONSTERS }
   };
-  const TILE_ORDER = ["breakfast", "calendar", "morning", "wear", "fruit", "feelings", "colors", "walk", "animals", "monsters", "halloween"];
+  const TILE_ORDER = ["breakfast", "calendar", "morning", "chores", "wear", "fruit", "feelings", "colors", "walk", "animals", "monsters", "halloween"];
 
   // Find the option for a saved pick (fruits are saved as their text, so they still draw if the list changes).
   function findOption(key, id) {
@@ -1525,6 +1554,7 @@
     const opt = q && (q.catalog || q.options()).find(o => o.id === id);
     if (opt) return opt;
     if (key === "fruit") return { id, name: splitLabel(id).name, fruit: id };
+    if (key === "chores") return choreOption(id);
     return null;
   }
 
@@ -1882,23 +1912,34 @@
         if (onIds.length >= opts.length) b.classList.add("done");
         b.append(head, row, label);
         b.addEventListener("click", openWear);
-      } else if (key === "morning") {
-        // Wide tile: all four jobs in a row, faded until they're done.
-        const doneIds = picks.morning || [];
-        const all = doneIds.length >= MORNING.length;
+      } else if (key === "morning" || key === "chores") {
+        // Wide checklist tile: every job in a row, faded until it's done.
+        const q = QUESTIONS[key];
+        const jobs = q.options();
+        if (!jobs.length) return; // no chores set up
+        const doneIds = (picks[key] || []).filter(id => jobs.some(j => j.id === id));
+        const all = doneIds.length >= jobs.length;
         b.classList.add("wide", "stack");
-        b.style.setProperty("--tile", QUESTIONS.morning.tile);
+        b.style.setProperty("--tile", q.tile);
         if (all) b.classList.add("done");
         const row = document.createElement("span");
-        row.className = "tile-picks";
-        MORNING.forEach(t => {
+        row.className = "tile-picks" + (jobs.length > 4 ? " compact" : "");
+        jobs.slice(0, 6).forEach(t => {
           const m = miniArt(t);
           if (!doneIds.includes(t.id)) m.style.opacity = ".3";
           row.appendChild(m);
         });
-        label.textContent = all ? "Morning all done!" : "Morning jobs: " + doneIds.length + " of " + MORNING.length;
+        if (jobs.length > 6) {
+          const more = document.createElement("span");
+          more.className = "more";
+          more.textContent = "+" + (jobs.length - 6);
+          row.appendChild(more);
+        }
+        label.textContent = all ? q.tileDone
+          : jobs.length === 1 ? q.tileCount + ": " + jobs[0].name
+          : q.tileCount + ": " + doneIds.length + " of " + jobs.length;
         b.append(row, label);
-        b.addEventListener("click", () => openPicker("morning"));
+        b.addEventListener("click", () => openPicker(key));
       } else {
         const q = QUESTIONS[key];
         const chosen = (picks[key] || []).map(id => findOption(key, id)).filter(Boolean);
@@ -2033,7 +2074,7 @@
     if (q.banner) banner.appendChild(q.banner());
     document.getElementById("kid-sub").textContent = q.sub || "Tap as many as you like!";
     const grid = document.getElementById("kid-grid");
-    grid.className = "pick-grid" + (q.cols === 3 ? " cols-3" : "");
+    grid.className = "pick-grid" + (q.cols === 3 ? " cols-3" : "") + (options.length === 1 ? " single" : "");
     grid.innerHTML = "";
     options.forEach(opt => {
       const b = document.createElement("button");
@@ -2064,7 +2105,7 @@
           if (on && pickSel.length === options.length) {
             confetti();
             fanfare();
-            setTimeout(() => say("Yay! All done! You did your whole morning!"), 500);
+            setTimeout(() => say(q.allDone || "Yay! All done!"), 500);
           } else if (on) say(opt.cheer.startsWith("Yay") ? opt.cheer : "Yay! " + opt.cheer);
           return;
         }
@@ -2239,8 +2280,8 @@
     renderWeekly();
     clearTimeout(menuTimer);
     const push = () => {
-      const snap = { meals: clone(state.meals), fruits: clone(state.fruits) };
-      change(s => { s.meals = clone(snap.meals); s.fruits = clone(snap.fruits); });
+      const snap = { meals: clone(state.meals), fruits: clone(state.fruits), chores: clone(state.chores) };
+      change(s => { s.meals = clone(snap.meals); s.fruits = clone(snap.fruits); s.chores = clone(snap.chores); });
     };
     if (now) { menuTimer = null; push(); }
     else menuTimer = setTimeout(() => { menuTimer = null; push(); }, 800);
@@ -2368,6 +2409,7 @@
     });
 
     document.getElementById("fruit-editor").value = state.fruits.join("\n");
+    document.getElementById("chores-editor").value = state.chores.join("\n");
   }
 
   document.getElementById("add-meal").addEventListener("click", () => {
@@ -2382,6 +2424,11 @@
     if (input) { input.focus(); input.select(); }
   });
 
+  document.getElementById("chores-editor").addEventListener("input", e => {
+    state.chores = e.target.value.split("\n").map(x => x.trim()).filter(Boolean);
+    menuEdited();
+  });
+
   document.getElementById("fruit-editor").addEventListener("input", e => {
     state.fruits = e.target.value.split("\n").map(x => x.trim()).filter(Boolean);
     menuEdited();
@@ -2389,7 +2436,7 @@
 
   document.getElementById("reset-menu").addEventListener("click", () => {
     if (!confirm("Put the breakfasts and fruits back to the original list? Your history is kept.")) return;
-    change(s => { s.meals = clone(DEFAULT_MEALS); s.fruits = DEFAULT_FRUITS.slice(); });
+    change(s => { s.meals = clone(DEFAULT_MEALS); s.fruits = DEFAULT_FRUITS.slice(); s.chores = DEFAULT_CHORES.slice(); });
     renderMenuEditor(null);
   });
 
@@ -2531,6 +2578,7 @@
     if (spinning || overlayMode === "pick") { pendingRemote = remote; return; }
     state.meals = remote.meals;
     state.fruits = remote.fruits;
+    state.chores = remote.chores;
     state.history = remote.history;
     state.days = remote.days;
     state.resetAt = remote.resetAt || 0;
