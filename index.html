@@ -254,6 +254,9 @@
   .count-num { font-size: 7rem; font-size: clamp(5rem, 32vw, 10rem); font-weight: bold; line-height: 1; color: #f57c00; animation: bounce-in .7s cubic-bezier(.2,1.6,.4,1) both; }
   .pumpkins { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; font-size: 32px; max-width: 380px; margin: 10px auto; }
   .pumpkins span { animation: pop .3s both; }
+  .video-box { position: relative; width: 100%; padding-top: 56.25%; background: #000; border-radius: 18px; overflow: hidden; }
+  .video-box iframe, .video-box video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+  #video-note a { color: var(--muted); }
   button.hw-video {
     margin: 14px auto 4px; font-size: 1.5rem; padding: 16px 32px;
     background: linear-gradient(180deg, #8e44ad, #5e2a84); color: #fff;
@@ -439,10 +442,12 @@
 
     <div class="card" id="hw-card">
       <h3>🎃 Halloween video</h3>
-      <p class="note" style="margin-top:0">A link (like a Google Photos share link) that opens from a big button on the
-        Halloween screen. It's saved with your synced family data, not in the app's public code.</p>
+      <p class="note" style="margin-top:0">Shows a big button on the Halloween screen. Best: upload the video to YouTube as
+        <b>Unlisted</b> and paste its link here — it plays right inside the app, even on the fridge. A link to a video file
+        (.mp4) also plays in the app; other links open in a new tab. Saved with your synced family data, not in the app's
+        public code.</p>
       <div class="row">
-        <div><input id="hw-video-url" type="url" placeholder="https://photos.app.goo.gl/…" autocomplete="off"></div>
+        <div><input id="hw-video-url" type="url" placeholder="https://youtu.be/…" autocomplete="off"></div>
         <button id="hw-video-save" class="secondary small" type="button" style="flex:none">Save</button>
       </div>
       <p id="hw-video-status" class="note"></p>
@@ -531,6 +536,12 @@
 
       <div id="kid-calendar" class="hidden" style="width:100%">
         <div class="cal-days" id="cal-days"></div>
+      </div>
+
+      <div id="kid-video" class="hidden" style="width:100%">
+        <h2 class="kid-title">🎃 Our Halloween video!</h2>
+        <div class="video-box" id="video-box"></div>
+        <p class="note" id="video-note"></p>
       </div>
 
       <div id="kid-halloween" class="hidden">
@@ -2009,7 +2020,7 @@
 
   // ---------- full-screen kid dialogs ----------
   // While one is open the page behind it is pinned in place so little fingers can't scroll it.
-  let overlayMode = null; // "meal" | "pick" | "halloween" | "calendar"
+  let overlayMode = null; // "meal" | "pick" | "halloween" | "calendar" | "video"
   let pickKey = null;
   let pickSel = [];
   let lockedY = 0;
@@ -2027,7 +2038,7 @@
 
   function openOverlay(mode) {
     overlayMode = mode;
-    ["meal", "pick", "halloween", "calendar"].forEach(m =>
+    ["meal", "pick", "halloween", "calendar", "video"].forEach(m =>
       document.getElementById("kid-" + m).classList.toggle("hidden", m !== mode));
     const done = document.getElementById("kid-done");
     const checklist = mode === "pick" && QUESTIONS[pickKey].checklist;
@@ -2051,6 +2062,7 @@
     const wasMode = overlayMode;
     overlayMode = null;
     document.getElementById("kid").classList.add("hidden");
+    document.getElementById("video-box").innerHTML = ""; // stop any video that's playing
     unlockScroll();
     try { speechSynthesis.cancel(); } catch (e) {}
     if (pendingRemote) { const r = pendingRemote; pendingRemote = null; applyRemote(r); }
@@ -2440,16 +2452,65 @@
     renderMenuEditor(null);
   });
 
+  // YouTube links play inside the app (YouTube converts videos into formats old fridge/TV browsers can play).
+  function youtubeId(url) {
+    const m = String(url).match(/(?:youtube\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
+  }
+  const isVideoFile = url => /\.(mp4|m4v|webm|mov)(?:[?#]|$)/i.test(url);
+  const isGooglePhotos = url => /(?:photos\.app\.goo\.gl|photos\.google\.com)/i.test(url);
+
+  function playHalloweenVideo() {
+    const url = state.halloweenVideo;
+    if (!/^https:\/\//.test(url)) return;
+    const id = youtubeId(url);
+    if (!id && !isVideoFile(url)) { window.open(url, "_blank", "noopener"); return; }
+    const box = document.getElementById("video-box");
+    box.innerHTML = "";
+    const note = document.getElementById("video-note");
+    note.innerHTML = "";
+    let player;
+    if (id) {
+      player = document.createElement("iframe");
+      player.src = "https://www.youtube-nocookie.com/embed/" + id + "?autoplay=1&playsinline=1&rel=0&modestbranding=1";
+      player.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture; fullscreen");
+      player.setAttribute("allowfullscreen", "");
+      player.title = "Halloween video";
+    } else {
+      player = document.createElement("video");
+      player.src = url;
+      player.controls = true;
+      player.autoplay = true;
+      player.setAttribute("playsinline", "");
+      player.addEventListener("error", () => {
+        note.textContent = "This video file won't play on this screen. Try an unlisted YouTube link instead (✏️ Menu → 🎃 Halloween video).";
+      });
+    }
+    box.appendChild(player);
+    // For grown-ups if the player itself has trouble
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = "Not playing? Open it in a new tab";
+    note.appendChild(a);
+    openOverlay("video");
+  }
+
   document.getElementById("hw-video").addEventListener("click", () => {
     if (!/^https:\/\//.test(state.halloweenVideo)) return;
     fanfare();
-    window.open(state.halloweenVideo, "_blank", "noopener");
+    playHalloweenVideo(); // swaps the Halloween screen for the player in the same full-screen dialog
   });
   function renderHalloweenVideoSetting() {
     const input = document.getElementById("hw-video-url");
     if (document.activeElement !== input) input.value = state.halloweenVideo;
-    document.getElementById("hw-video-status").textContent = state.halloweenVideo
-      ? "✅ The Halloween screen shows a “Watch our Halloween video!” button." : "No video yet.";
+    const v = state.halloweenVideo;
+    document.getElementById("hw-video-status").textContent = !v ? "No video yet."
+      : youtubeId(v) ? "✅ YouTube video — plays right inside the app."
+      : isVideoFile(v) ? "✅ Video file — plays inside the app (if this screen supports its format)."
+      : isGooglePhotos(v) ? "⚠️ Google Photos links open in a new tab and often won't play on the fridge. An unlisted YouTube link works better."
+      : "✅ Opens in a new tab from the Halloween screen.";
   }
   document.getElementById("hw-video-save").addEventListener("click", () => {
     const v = document.getElementById("hw-video-url").value.trim();
