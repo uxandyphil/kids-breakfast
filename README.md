@@ -25,6 +25,9 @@ so the Home screen becomes "today at a glance". Each pick clears itself from Hom
   sun hat, and sunscreen when it's hot. Tap each one when it's on. Uses the free [Open-Meteo](https://open-meteo.com)
   forecast (no account needed), refreshed every 30 minutes. To use a different place, change `WEATHER_PLACE`
   in `index.html`.
+- **🧹 Chores** — a checklist like Morning jobs, starting with 🧸 Clean up toys. Each tap counts right away
+  ("Yay! Clean up toys — done!"), and finishing them all gets confetti. Edit the list in ✏️ Menu → 🧹 Chores
+  (one per line; a leading emoji becomes the picture). An empty list hides the tile.
 - **🍓 Fruit** — Blueberries, Blackberries, Bananas, Raspberries (edit the list in the Menu tab)
 - **😊 Feelings** — 28 feelings: Happy, Excited, Silly, Laughing, Loved, Huggy, Proud, Brave, Thankful, Calm,
   Curious, Surprised, Sleepy, Hungry, Thirsty, Cold, Hot, Bored, Shy, Confused, Worried, Scared, Lonely, Sad,
