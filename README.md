@@ -60,6 +60,11 @@ Below the tiles, grown-ups get **Today's plate**: the balanced meal with the fru
 (or a suggestion), plus tips. Heavier meals get a "balance it out" tag. Breakfasts marked **once a week**
 (like Go out to DK) are greyed out with a 🔒 once they've been today's breakfast that week (Monday–Sunday).
 
+### Hiding tiles
+✏️ Menu → **🏠 Home tiles** has a switch for every Home tile. Hidden tiles keep all their settings and picks and
+come back exactly as they were when switched on again. 🍓 Fruit and 🛴 Walk are hidden by default. The setting
+syncs across devices.
+
 ### History tab
 - One row per day: the breakfast plus everything picked on the Home tiles, a breakfast count for the last
   7 days, and a "How we felt" summary. Tap ✕ to remove a mistake

@@ -440,6 +440,13 @@
       <textarea id="chores-editor" rows="4"></textarea>
     </div>
 
+    <div class="card" id="tiles-card">
+      <h3>🏠 Home tiles</h3>
+      <p class="note" style="margin-top:0">Choose which tiles show on the Home screen. Hidden tiles keep everything they
+        had and come back exactly as they were when you turn them on again.</p>
+      <div id="tile-toggles"></div>
+    </div>
+
     <div class="card" id="hw-card">
       <h3>🎃 Halloween video</h3>
       <p class="note" style="margin-top:0">Shows a big button on the Halloween screen. Best: upload the video to YouTube as
@@ -632,6 +639,8 @@
 
   // Lines without an emoji get a drawn picture when we know the fruit (raspberries, blackberries).
   // Chores are editable in the Menu tab, one per line (a leading emoji becomes the picture).
+  // Hidden from Home unless switched back on in Menu → Home tiles.
+  const DEFAULT_HIDDEN_TILES = ["fruit", "walk"];
   const DEFAULT_CHORES = ["🧸 Clean up toys"];
   const DEFAULT_FRUITS = ["🫐 Blueberries", "Blackberries", "🍌 Bananas", "Raspberries"];
   const OLD_DEFAULT_FRUITS = [
@@ -703,6 +712,7 @@
     updatedAt: "breakfastWheel.updatedAt",
     resetAt: "breakfastWheel.resetAt",
     halloweenVideo: "breakfastWheel.halloweenVideo",
+    hiddenTiles: "breakfastWheel.hiddenTiles",
     sync: "breakfastWheel.sync",
     sound: "breakfastWheel.sound",
     legacyDk: "breakfastWheel.dkLastDate"
@@ -734,6 +744,8 @@
     resetAt: load(KEYS.resetAt, 0),
     // Link opened from the Halloween screen (kept in family data, not in the public code).
     halloweenVideo: load(KEYS.halloweenVideo, ""),
+    // Home tiles turned off in Menu → Home tiles (the features stay; they're just not shown).
+    hiddenTiles: load(KEYS.hiddenTiles, null),
     updatedAt: load(KEYS.updatedAt, 0)
   };
   normalize(state);
@@ -752,6 +764,7 @@
     Object.keys(s.days).forEach(d => { if (d < cutoff) delete s.days[d]; });
     s.resetAt = s.resetAt || 0;
     s.halloweenVideo = typeof s.halloweenVideo === "string" ? s.halloweenVideo : "";
+    if (!Array.isArray(s.hiddenTiles)) s.hiddenTiles = DEFAULT_HIDDEN_TILES.slice();
     s.updatedAt = s.updatedAt || 0;
     return s;
   }
@@ -763,6 +776,7 @@
     save(KEYS.days, state.days);
     save(KEYS.resetAt, state.resetAt);
     save(KEYS.halloweenVideo, state.halloweenVideo);
+    save(KEYS.hiddenTiles, state.hiddenTiles);
     save(KEYS.updatedAt, state.updatedAt);
   }
 
@@ -1829,6 +1843,7 @@
     const picks = boardPicks();
 
     TILE_ORDER.forEach(key => {
+      if (state.hiddenTiles.indexOf(key) >= 0) return; // switched off in Menu → Home tiles
       if (key === "fruit" && !state.fruits.length) return;
       if (key === "calendar" && !sync.cfg) return; // needs the family code
       const b = document.createElement("button");
@@ -2502,6 +2517,25 @@
     fanfare();
     playHalloweenVideo(); // swaps the Halloween screen for the player in the same full-screen dialog
   });
+  const TILE_NAMES = {
+    breakfast: "🎡 Spin for breakfast", calendar: "📅 Today (calendar)", morning: "☀️ Morning jobs", chores: "🧹 Chores",
+    wear: "🌦️ What to wear", fruit: "🍓 Fruit", feelings: "😊 Feelings", colors: "🎨 Colors", walk: "🛴 Walk",
+    animals: "🐶 Animal", monsters: "👾 Monster", halloween: "🎃 Halloween"
+  };
+  function renderTileToggles() {
+    const root = document.getElementById("tile-toggles");
+    root.innerHTML = "";
+    TILE_ORDER.forEach(key => {
+      root.appendChild(checkbox(TILE_NAMES[key] || key, state.hiddenTiles.indexOf(key) < 0, on => {
+        change(s => {
+          const hidden = (s.hiddenTiles || []).filter(k => k !== key);
+          if (!on) hidden.push(key);
+          s.hiddenTiles = hidden;
+        });
+      }));
+    });
+  }
+
   function renderHalloweenVideoSetting() {
     const input = document.getElementById("hw-video-url");
     if (document.activeElement !== input) input.value = state.halloweenVideo;
@@ -2644,6 +2678,7 @@
     state.days = remote.days;
     state.resetAt = remote.resetAt || 0;
     state.halloweenVideo = remote.halloweenVideo || "";
+    state.hiddenTiles = remote.hiddenTiles;
     state.updatedAt = remote.updatedAt;
     saveLocal();
     refresh();
@@ -2795,7 +2830,7 @@
     });
   });
 
-  function refresh() { draw(); renderHome(); renderHistory(); renderHalloweenVideoSetting(); }
+  function refresh() { draw(); renderHome(); renderHistory(); renderHalloweenVideoSetting(); renderTileToggles(); }
 
   document.getElementById("spin").addEventListener("click", spin);
   document.getElementById("wheel-wrap").addEventListener("click", spin);
